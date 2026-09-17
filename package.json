@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/init-db.js",
     "build": "next build",
     "prestart": "node scripts/init-db.js",
     "start": "node scripts/init-db.js && next start",
