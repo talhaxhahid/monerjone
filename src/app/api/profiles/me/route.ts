@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { containsContactInfo } from '@/lib/security';
 import { calculateAge, computeCompletionScore } from '@/lib/utils';
+
 
 export async function GET() {
   try {
@@ -74,9 +76,9 @@ export async function GET() {
       prefEducation: profile?.prefEducation || null,
       prefDistrict: profile?.prefDistrict || null,
       workPreference: profile?.workPreference || null,
-      photoIds: photos.map((p) => p.id),
-      photos: photos.map((p) => `/api/photos/${p.id}`),
-      rawPhotos: photos.map((p) => p.dataUrl),
+      photoIds: photos.map((p: { id: string }) => p.id),
+      photos: photos.map((p: { id: string }) => `/api/photos/${p.id}`),
+      rawPhotos: photos.map((p: { dataUrl: string }) => p.dataUrl),
     };
 
     return NextResponse.json({ profile: fullProfile });
@@ -123,38 +125,45 @@ export async function PUT(request: NextRequest) {
       });
     }
 
+    // Safe integer parser
+    const parseSafeInt = (val: unknown, fallback: number | null = null): number | null => {
+      if (val === null || val === undefined || val === '') return fallback;
+      const num = parseInt(String(val), 10);
+      return isNaN(num) ? fallback : num;
+    };
+
     // Profile fields
-    const profileData: any = {
-      heightCm: body.heightCm ? Number(body.heightCm) : null,
-      weightKg: body.weightKg ? Number(body.weightKg) : null,
-      education: body.education || null,
-      subject: body.subject || null,
-      occupation: body.occupation || null,
-      income: body.income || null,
-      familyStatus: body.familyStatus || 'Middle class',
-      fatherOccupation: body.fatherOccupation || null,
-      motherOccupation: body.motherOccupation || null,
-      brothers: body.brothers !== undefined ? Number(body.brothers) : 0,
-      sisters: body.sisters !== undefined ? Number(body.sisters) : 0,
-      languages: body.languages || 'Bangla, English',
-      introduction: body.introduction || null,
-      longBio: body.longBio || null,
+    const profileData = {
+      heightCm: parseSafeInt(body.heightCm, null),
+      weightKg: parseSafeInt(body.weightKg, null),
+      education: body.education ? String(body.education) : null,
+      subject: body.subject ? String(body.subject) : null,
+      occupation: body.occupation ? String(body.occupation) : null,
+      income: body.income ? String(body.income) : null,
+      familyStatus: body.familyStatus ? String(body.familyStatus) : 'Middle class',
+      fatherOccupation: body.fatherOccupation ? String(body.fatherOccupation) : null,
+      motherOccupation: body.motherOccupation ? String(body.motherOccupation) : null,
+      brothers: parseSafeInt(body.brothers, 0) ?? 0,
+      sisters: parseSafeInt(body.sisters, 0) ?? 0,
+      languages: body.languages ? String(body.languages) : 'Bangla, English',
+      introduction: body.introduction ? String(body.introduction) : null,
+      longBio: body.longBio ? String(body.longBio) : null,
       hobbies: Array.isArray(body.hobbies) ? JSON.stringify(body.hobbies) : '[]',
-      favoriteBooks: body.favoriteBooks || null,
-      favoriteFood: body.favoriteFood || null,
-      smoking: body.smoking || null,
-      prayerFrequency: body.prayerFrequency || null,
-      hijabNiqab: body.hijabNiqab || null,
-      children: body.children || null,
-      allergies: body.allergies || null,
-      healthProblems: body.healthProblems || null,
-      lookingFor: body.lookingFor || null,
-      prefAgeMin: body.prefAgeMin ? Number(body.prefAgeMin) : null,
-      prefAgeMax: body.prefAgeMax ? Number(body.prefAgeMax) : null,
-      prefHeight: body.prefHeight || null,
-      prefEducation: body.prefEducation || null,
-      prefDistrict: body.prefDistrict || null,
-      workPreference: body.workPreference || null,
+      favoriteBooks: body.favoriteBooks ? String(body.favoriteBooks) : null,
+      favoriteFood: body.favoriteFood ? String(body.favoriteFood) : null,
+      smoking: body.smoking ? String(body.smoking) : null,
+      prayerFrequency: body.prayerFrequency ? String(body.prayerFrequency) : null,
+      hijabNiqab: body.hijabNiqab ? String(body.hijabNiqab) : null,
+      children: body.children ? String(body.children) : null,
+      allergies: body.allergies ? String(body.allergies) : null,
+      healthProblems: body.healthProblems ? String(body.healthProblems) : null,
+      lookingFor: body.lookingFor ? String(body.lookingFor) : null,
+      prefAgeMin: parseSafeInt(body.prefAgeMin, 18),
+      prefAgeMax: parseSafeInt(body.prefAgeMax, 45),
+      prefHeight: body.prefHeight ? String(body.prefHeight) : null,
+      prefEducation: body.prefEducation ? String(body.prefEducation) : null,
+      prefDistrict: body.prefDistrict ? String(body.prefDistrict) : null,
+      workPreference: body.workPreference ? String(body.workPreference) : null,
     };
 
     const updatedProfile = await prisma.profile.upsert({
@@ -176,7 +185,7 @@ export async function PUT(request: NextRequest) {
       // Insert new compressed photos
       for (let i = 0; i < body.photos.length; i++) {
         const photoData = body.photos[i];
-        if (photoData && photoData.startsWith('data:image')) {
+        if (typeof photoData === 'string' && photoData.length > 10) {
           await prisma.photo.create({
             data: {
               userId: user.id,

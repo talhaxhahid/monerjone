@@ -136,11 +136,11 @@ export default function ProfileEditWizardPage() {
 
     addToast('ছবি অপ্টিমাইজ ও কম্প্রেস করা হচ্ছে...', 'info');
 
-    const newPhotos: string[] = [...formData.photos];
+    const newPhotos: string[] = [...(formData.photos || [])];
     for (let i = 0; i < files.length; i++) {
       if (newPhotos.length >= 5) break;
       try {
-        const compressedWebP = await compressImageToWebP(files[i], 1200, 1200, 0.82);
+        const compressedWebP = await compressImageToWebP(files[i], 800, 800, 0.78);
         newPhotos.push(compressedWebP);
       } catch (err) {
         console.error('Photo compression error:', err);
@@ -152,24 +152,26 @@ export default function ProfileEditWizardPage() {
   };
 
   const removePhoto = (index: number) => {
-    const updated = formData.photos.filter((_: any, idx: number) => idx !== index);
+    const updated = (formData.photos || []).filter((_: any, idx: number) => idx !== index);
     setFormData({ ...formData, photos: updated });
   };
 
   const addHobby = () => {
     if (!hobbyInput.trim()) return;
-    if (formData.hobbies.includes(hobbyInput.trim())) return;
+    const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
+    if (currentHobbies.includes(hobbyInput.trim())) return;
     setFormData({
       ...formData,
-      hobbies: [...formData.hobbies, hobbyInput.trim()],
+      hobbies: [...currentHobbies, hobbyInput.trim()],
     });
     setHobbyInput('');
   };
 
   const removeHobby = (h: string) => {
+    const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
     setFormData({
       ...formData,
-      hobbies: formData.hobbies.filter((item: string) => item !== h),
+      hobbies: currentHobbies.filter((item: string) => item !== h),
     });
   };
 
@@ -644,7 +646,7 @@ export default function ProfileEditWizardPage() {
 
               {/* Photo Preview Grid */}
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2">
-                {formData.photos.map((ph: string, idx: number) => (
+                {(formData.photos || []).map((ph: string, idx: number) => (
                   <div
                     key={idx}
                     className="relative aspect-square rounded-xl overflow-hidden border border-[#FF4D7E]/30 group"

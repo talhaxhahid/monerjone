@@ -24,22 +24,20 @@ export default function ImageWithFallback({
   showFallbackLabel = false,
   ...props
 }: ImageWithFallbackProps) {
-  // Use src as key part of state to handle changing image sources gracefully without setState in effect
-  const [prevSrc, setPrevSrc] = useState<string | null | undefined>(src);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  if (prevSrc !== src) {
-    setPrevSrc(src);
+  React.useEffect(() => {
     setIsLoading(true);
     setHasError(false);
-  }
+  }, [src]);
 
-  const hasValidSrc = Boolean(src && src.trim() !== '' && !hasError);
+  const hasValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '' && !hasError);
 
   // Extract initial
   const initial = (name || alt || 'U').trim().charAt(0).toUpperCase();
   const isFemale = gender?.toLowerCase() === 'female' || gender === 'পাত্রী';
+
 
   return (
     <div className={`relative overflow-hidden w-full h-full flex items-center justify-center ${containerClassName}`}>
