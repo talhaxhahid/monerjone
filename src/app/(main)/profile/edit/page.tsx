@@ -80,6 +80,25 @@ export default function ProfileEditWizardPage() {
           const data = await res.json();
           const p = data.profile;
           if (p) {
+            const safeHobbies = Array.isArray(p.hobbies)
+              ? p.hobbies
+              : typeof p.hobbies === 'string'
+              ? (() => {
+                  try {
+                    const parsed = JSON.parse(p.hobbies);
+                    return Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    return [];
+                  }
+                })()
+              : [];
+
+            const safePhotos = Array.isArray(p.rawPhotos)
+              ? p.rawPhotos.filter((ph: any) => ph && typeof ph === 'string')
+              : Array.isArray(p.photos)
+              ? p.photos.filter((ph: any) => ph && typeof ph === 'string')
+              : [];
+
             setFormData({
               heightCm: p.heightCm || '',
               weightKg: p.weightKg || '',
@@ -100,7 +119,7 @@ export default function ProfileEditWizardPage() {
               prayerFrequency: p.prayerFrequency || '5 times a day',
               hijabNiqab: p.hijabNiqab || 'Wears Hijab',
               smoking: p.smoking || 'No',
-              hobbies: p.hobbies || [],
+              hobbies: safeHobbies,
               favoriteBooks: p.favoriteBooks || '',
               favoriteFood: p.favoriteFood || '',
               introduction: p.introduction || '',
@@ -112,12 +131,12 @@ export default function ProfileEditWizardPage() {
               prefEducation: p.prefEducation || '',
               prefDistrict: p.prefDistrict || '',
               workPreference: p.workPreference || '',
-              photos: p.rawPhotos || [],
+              photos: safePhotos,
             });
           }
         }
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load profile:', err);
       }
     }
     if (user) {
@@ -126,53 +145,68 @@ export default function ProfileEditWizardPage() {
   }, [user]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    try {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
 
-    if (formData.photos.length >= 5) {
-      addToast('সর্বোচ্চ ৫টি ছবি আপলোড করা যাবে', 'error');
-      return;
-    }
+      const currentPhotos = Array.isArray(formData.photos) ? formData.photos : [];
+      if (currentPhotos.length >= 5) {
+        addToast('সর্বোচ্চ ৫টি ছবি আপলোড করা যাবে', 'error');
+        return;
+      }
 
-    addToast('ছবি অপ্টিমাইজ ও কম্প্রেস করা হচ্ছে...', 'info');
+      addToast('ছবি অপ্টিমাইজ ও কম্প্রেস করা হচ্ছে...', 'info');
 
-    const newPhotos: string[] = [...(formData.photos || [])];
-    for (let i = 0; i < files.length; i++) {
-      if (newPhotos.length >= 5) break;
-      try {
-        const compressedWebP = await compressImageToWebP(files[i], 800, 800, 0.78);
-        newPhotos.push(compressedWebP);
-      } catch (err) {
-        console.error('Photo compression error:', err);
+      const newPhotos: string[] = [...currentPhotos];
+      for (let i = 0; i < files.length; i++) {
+        if (newPhotos.length >= 5) break;
+        try {
+          const file = files[i];
+          if (!file || !file.type.startsWith('image/')) continue;
+          const compressedWebP = await compressImageToWebP(file, 800, 800, 0.78);
+          if (compressedWebP) {
+            newPhotos.push(compressedWebP);
+          }
+        } catch (err) {
+          console.error('Photo compression error:', err);
+        }
+      }
+
+      setFormData((prev: any) => ({ ...prev, photos: newPhotos }));
+      addToast('ছবি সফলভাবে যুক্ত হয়েছে', 'success');
+    } catch (err) {
+      console.error('Upload handler error:', err);
+      addToast('ছবি আপলোড করতে সমস্যা হয়েছে', 'error');
+    } finally {
+      if (e.target) {
+        e.target.value = '';
       }
     }
-
-    setFormData({ ...formData, photos: newPhotos });
-    addToast('ছবি সফলভাবে যুক্ত হয়েছে', 'success');
   };
 
   const removePhoto = (index: number) => {
-    const updated = (formData.photos || []).filter((_: any, idx: number) => idx !== index);
-    setFormData({ ...formData, photos: updated });
+    const current = Array.isArray(formData.photos) ? formData.photos : [];
+    const updated = current.filter((_: any, idx: number) => idx !== index);
+    setFormData((prev: any) => ({ ...prev, photos: updated }));
   };
 
   const addHobby = () => {
     if (!hobbyInput.trim()) return;
     const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
     if (currentHobbies.includes(hobbyInput.trim())) return;
-    setFormData({
-      ...formData,
+    setFormData((prev: any) => ({
+      ...prev,
       hobbies: [...currentHobbies, hobbyInput.trim()],
-    });
+    }));
     setHobbyInput('');
   };
 
   const removeHobby = (h: string) => {
     const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
-    setFormData({
-      ...formData,
+    setFormData((prev: any) => ({
+      ...prev,
       hobbies: currentHobbies.filter((item: string) => item !== h),
-    });
+    }));
   };
 
   const handleSave = async (redirectOnSuccess: boolean = false) => {
@@ -187,14 +221,15 @@ export default function ProfileEditWizardPage() {
       const data = await res.json();
       if (res.ok) {
         addToast('বায়োডাটা সফলভাবে সংরক্ষণ করা হয়েছে!', 'success');
-        if (redirectOnSuccess && user) {
+        if (redirectOnSuccess && user?.id) {
           router.push(`/profile/${user.id}`);
         }
       } else {
         setError(data.message || data.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
       }
-    } catch {
-      setError('সার্ভার ত্রুটি');
+    } catch (err) {
+      console.error('Save error:', err);
+      setError('সার্ভার ত্রুটি, অনুগ্রহ করে আবার চেষ্টা করুন');
     } finally {
       setSaving(false);
     }
@@ -271,7 +306,7 @@ export default function ProfileEditWizardPage() {
                   উচ্চতা (সেমি বা ফুট-ইঞ্চি)
                 </label>
                 <select
-                  value={formData.heightCm}
+                  value={formData.heightCm || ''}
                   onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
@@ -303,7 +338,7 @@ export default function ProfileEditWizardPage() {
                 <input
                   type="number"
                   placeholder="যেমন: 65"
-                  value={formData.weightKg}
+                  value={formData.weightKg || ''}
                   onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -311,10 +346,10 @@ export default function ProfileEditWizardPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  নিজ জেলা
+                  বর্তমান জেলা
                 </label>
                 <select
-                  value={formData.district}
+                  value={formData.district || ''}
                   onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
@@ -332,14 +367,29 @@ export default function ProfileEditWizardPage() {
                   বৈবাহিক অবস্থা
                 </label>
                 <select
-                  value={formData.maritalStatus}
+                  value={formData.maritalStatus || 'Never Married'}
                   onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
                   <option value="Never Married">অবিবাহিত</option>
-                  <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
                   <option value="Divorced">ডিভোর্সড</option>
                   <option value="Widowed">বিধবা / বিপত্নীক</option>
+                  <option value="Married - Seeking Another Wife">বিবাহিত (দ্বিতীয় বিবাহে আগ্রহী)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                  ধর্ম
+                </label>
+                <select
+                  value={formData.religion || 'Islam'}
+                  onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
+                >
+                  <option value="Islam">ইসলাম</option>
+                  <option value="Hindu">হিন্দু</option>
+                  <option value="Other">অন্যান্য</option>
                 </select>
               </div>
 
@@ -348,25 +398,38 @@ export default function ProfileEditWizardPage() {
                   সন্তান বিবরণ
                 </label>
                 <select
-                  value={formData.children}
+                  value={formData.children || 'No children'}
                   onChange={(e) => setFormData({ ...formData, children: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
                   <option value="No children">সন্তান নেই</option>
                   <option value="1 child">১ সন্তান</option>
-                  <option value="2+ children">২+ সন্তান</option>
+                  <option value="2+ children">২ বা ততোধিক সন্তান</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  ভাষাসমূহ
+                  ভাইয়ের সংখ্যা
                 </label>
                 <input
-                  type="text"
-                  placeholder="যেমন: বাংলা, ইংরেজি, আরবি"
-                  value={formData.languages}
-                  onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                  type="number"
+                  min="0"
+                  value={formData.brothers ?? 0}
+                  onChange={(e) => setFormData({ ...formData, brothers: parseInt(e.target.value, 10) || 0 })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                  বোনের সংখ্যা
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.sisters ?? 0}
+                  onChange={(e) => setFormData({ ...formData, sisters: parseInt(e.target.value, 10) || 0 })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -379,37 +442,38 @@ export default function ProfileEditWizardPage() {
           <div className="space-y-5">
             <h2 className="text-lg font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
               <GraduationCap className="w-5 h-5 text-[#FF4D7E]" />
-              <span>ধাপ ২: শিক্ষা, পেশা ও পারিবারিক বিবরণ</span>
+              <span>ধাপ ২: শিক্ষাগত ও পেশাগত বিবরণ</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  শিক্ষাগত যোগ্যতা
+                  সর্বোচ্চ শিক্ষাগত যোগ্যতা
                 </label>
                 <select
-                  value={formData.education}
+                  value={formData.education || ''}
                   onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
-                  <option value="">নির্বাচন করুন</option>
-                  <option value="Honours">অনার্স / স্নাতক</option>
-                  <option value="Masters">মাস্টার্স</option>
-                  <option value="HSC">এইচএসসি</option>
-                  <option value="SSC">এসএসসি</option>
-                  <option value="PhD">পিএইচডি</option>
+                  <option value="">শিক্ষা নির্বাচন করুন</option>
                   <option value="Primary">প্রাথমিক</option>
+                  <option value="Secondary">মাধ্যমিক</option>
+                  <option value="SSC">এসএসসি (SSC)</option>
+                  <option value="HSC">এইচএসসি (HSC)</option>
+                  <option value="Honours">অনার্স / স্নাতক / ডিগ্রি</option>
+                  <option value="Masters">মাস্টার্স / স্নাতকোত্তর</option>
+                  <option value="PhD">পিএইচডি / ডক্টরেট</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  বিষয় / বিভাগ
+                  বিষয় / বিভাগ (Subject/Field)
                 </label>
                 <input
                   type="text"
-                  placeholder="যেমন: CSE, BBA, ইসলামিক স্টাডিজ"
-                  value={formData.subject}
+                  placeholder="যেমন: কম্পিউটার সায়েন্স, একাউন্টিং, ইসলামিক স্টাডিজ"
+                  value={formData.subject || ''}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -421,8 +485,8 @@ export default function ProfileEditWizardPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="যেমন: সফটওয়্যার ইঞ্জিনিয়ার, ব্যাংকার, শিক্ষক, ব্যবসায়ী"
-                  value={formData.occupation}
+                  placeholder="যেমন: সফটওয়্যার ইঞ্জিনিয়ার, শিক্ষক, ব্যবসায়ী, সরকারি চাকরি"
+                  value={formData.occupation || ''}
                   onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -430,15 +494,21 @@ export default function ProfileEditWizardPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  মাসিক আয়
+                  মাসিক আনুমানিক আয় (টাকা)
                 </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: ৳ ৫০,০০০ - ৮০,০০০"
-                  value={formData.income}
+                <select
+                  value={formData.income || ''}
                   onChange={(e) => setFormData({ ...formData, income: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                />
+                >
+                  <option value="">আয় নির্বাচন করুন</option>
+                  <option value="৳ ২০,০০০ - ৩৫,০০০">৳ ২০,০০০ - ৩৫,০০০</option>
+                  <option value="৳ ৩৫,০০০ - ৫০,০০০">৳ ৩৫,০০০ - ৫০,০০০</option>
+                  <option value="৳ ৫০,০০০ - ৮০,০০০">৳ ৫০,০০০ - ৮০,০০০</option>
+                  <option value="৳ ৮০,০০০ - ১,২০,০০০">৳ ৮০,০০০ - ১,২০,০০০</option>
+                  <option value="৳ ১,২০,০০০+">৳ ১,২০,০০০+</option>
+                  <option value="ব্যক্তিগত / আলোচনা সাপেক্ষ">ব্যক্তিগত / আলোচনা সাপেক্ষ</option>
+                </select>
               </div>
 
               <div>
@@ -447,8 +517,8 @@ export default function ProfileEditWizardPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="যেমন: সরকারি কর্মকর্তা / ব্যবসায়ী"
-                  value={formData.fatherOccupation}
+                  placeholder="যেমন: ব্যবসায়ী, অবসরপ্রাপ্ত কর্মকর্তা, শিক্ষক"
+                  value={formData.fatherOccupation || ''}
                   onChange={(e) => setFormData({ ...formData, fatherOccupation: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -460,35 +530,9 @@ export default function ProfileEditWizardPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="যেমন: গৃহিণী / শিক্ষিকা"
-                  value={formData.motherOccupation}
+                  placeholder="যেমন: গৃহিণী, শিক্ষিকা"
+                  value={formData.motherOccupation || ''}
                   onChange={(e) => setFormData({ ...formData, motherOccupation: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  ভাইয়ের সংখ্যা
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.brothers}
-                  onChange={(e) => setFormData({ ...formData, brothers: Number(e.target.value) })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  বোনের সংখ্যা
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.sisters}
-                  onChange={(e) => setFormData({ ...formData, sisters: Number(e.target.value) })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -501,49 +545,50 @@ export default function ProfileEditWizardPage() {
           <div className="space-y-5">
             <h2 className="text-lg font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
               <span className="text-[#FF4D7E]">🕌</span>
-              <span>ধাপ ৩: ধর্মীয় ও ব্যক্তিগত লাইফস্টাইল</span>
+              <span>ধাপ ৩: ধর্মীয় পালন ও লাইফস্টাইল</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  নামাজ আদায়
+                  নামাজ আদায়ের অভ্যাস
                 </label>
                 <select
-                  value={formData.prayerFrequency}
+                  value={formData.prayerFrequency || '5 times a day'}
                   onChange={(e) => setFormData({ ...formData, prayerFrequency: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
                   <option value="5 times a day">দৈনিক ৫ ওয়াক্ত</option>
                   <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
                   <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
-                  <option value="Usually">মাঝে মাঝে</option>
+                  <option value="Usually">মাঝে মাঝে / জুমুআ</option>
+                  <option value="Non-Religious">নিয়মিত নন</option>
                 </select>
               </div>
 
-              {user.gender === 'Female' && (
-                <div>
-                  <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                    হিজাব / পর্দা
-                  </label>
-                  <select
-                    value={formData.hijabNiqab}
-                    onChange={(e) => setFormData({ ...formData, hijabNiqab: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                  >
-                    <option value="Wears Hijab">হিজাব পরেন</option>
-                    <option value="Wears Hijab & Niqab">হিজাব ও নিকাব পরেন</option>
-                    <option value="Does not currently wear Hijab">বর্তমানে হিজাব পরেন না</option>
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                  পর্দা / হিজাব / নিকাব (নারীদের জন্য)
+                </label>
+                <select
+                  value={formData.hijabNiqab || 'Wears Hijab'}
+                  onChange={(e) => setFormData({ ...formData, hijabNiqab: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
+                >
+                  <option value="Wears Hijab">হিজাব পরেন</option>
+                  <option value="Wears Hijab & Niqab">হিজাব ও নিকাব পরেন</option>
+                  <option value="Does not currently wear Hijab">বর্তমানে হিজাব পরেন না</option>
+                  <option value="Undecided / Open to discussion">আলোচনা সাপেক্ষ</option>
+                  <option value="N/A">প্রযোজ্য নয় (পুরুষ)</option>
+                </select>
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  ধূমপান
+                  ধূমপান অভ্যাস
                 </label>
                 <select
-                  value={formData.smoking}
+                  value={formData.smoking || 'No'}
                   onChange={(e) => setFormData({ ...formData, smoking: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
@@ -558,7 +603,7 @@ export default function ProfileEditWizardPage() {
                   পারিবারিক অবস্থান
                 </label>
                 <select
-                  value={formData.familyStatus}
+                  value={formData.familyStatus || 'Middle class'}
                   onChange={(e) => setFormData({ ...formData, familyStatus: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 >
@@ -579,6 +624,12 @@ export default function ProfileEditWizardPage() {
                     placeholder="যেমন: বই পড়া, ভ্রমণ, কুরআন তিলাওয়াত, রান্না"
                     value={hobbyInput}
                     onChange={(e) => setHobbyInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addHobby();
+                      }
+                    }}
                     className="flex-1 px-3.5 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                   />
                   <button
@@ -590,7 +641,7 @@ export default function ProfileEditWizardPage() {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {formData.hobbies.map((h: string) => (
+                  {(Array.isArray(formData.hobbies) ? formData.hobbies : []).map((h: string) => (
                     <span
                       key={h}
                       className="px-3 py-1 rounded-full bg-[#331A5C] text-[#F5F3FA] text-xs border border-white/10 flex items-center gap-1.5"
@@ -628,7 +679,7 @@ export default function ProfileEditWizardPage() {
                     প্রোফাইল ছবি যুক্ত করুন (সর্বোচ্চ ৫টি)
                   </span>
                   <p className="text-[11px] text-[#8B7FA8] mt-0.5">
-                    ছবি স্বয়ংক্রিয়ভাবে হাই-কোয়ালিটি WebP ফরম্যাটে কম্প্রেস হবে
+                    ছবি স্বয়ংক্রিয়ভাবে হাই-কোয়ালিটি WebP ফরম্যাটে অপ্টিমাইজ হবে
                   </p>
                 </div>
                 <label className="px-4 py-2 rounded-xl text-xs font-bold bg-[#FF4D7E] hover:bg-[#E63465] text-white cursor-pointer flex items-center gap-1.5 transition-all">
@@ -646,13 +697,13 @@ export default function ProfileEditWizardPage() {
 
               {/* Photo Preview Grid */}
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2">
-                {(formData.photos || []).map((ph: string, idx: number) => (
+                {(Array.isArray(formData.photos) ? formData.photos : []).map((ph: string, idx: number) => (
                   <div
                     key={idx}
                     className="relative aspect-square rounded-xl overflow-hidden border border-[#FF4D7E]/30 group"
                   >
                     <ImageWithFallback
-                      src={ph}
+                      src={typeof ph === 'string' ? ph : ''}
                       alt={`photo-${idx}`}
                       fallbackType="thumbnail"
                       className="w-full h-full object-cover"
@@ -683,7 +734,7 @@ export default function ProfileEditWizardPage() {
                 <textarea
                   rows={2}
                   placeholder="যেমন: আমি ধার্মিক, সৎ ও অমায়িক স্বভাবের একজন মানুষ..."
-                  value={formData.introduction}
+                  value={formData.introduction || ''}
                   onChange={(e) => setFormData({ ...formData, introduction: e.target.value })}
                   className="w-full p-3 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -696,7 +747,7 @@ export default function ProfileEditWizardPage() {
                 <textarea
                   rows={3}
                   placeholder="যেমন: পাত্রী/পাত্রকে দীনদার, পাঁচ ওয়াক্ত নামাজী ও পারিবারিক মূল্যবোধ সম্পন্ন হতে হবে..."
-                  value={formData.lookingFor}
+                  value={formData.lookingFor || ''}
                   onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
                   className="w-full p-3 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
@@ -706,20 +757,26 @@ export default function ProfileEditWizardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                    প্রত্যাশিত বয়স সীমা ({formData.prefAgeMin} - {formData.prefAgeMax} বছর)
+                    প্রত্যাশিত বয়স সীমা ({formData.prefAgeMin ?? 18} - {formData.prefAgeMax ?? 35} বছর)
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
-                      value={formData.prefAgeMin}
-                      onChange={(e) => setFormData({ ...formData, prefAgeMin: Number(e.target.value) })}
+                      value={formData.prefAgeMin ?? 18}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        setFormData((prev: any) => ({ ...prev, prefAgeMin: isNaN(val) ? '' : val }));
+                      }}
                       className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-center text-[#F5F3FA]"
                       placeholder="Min"
                     />
                     <input
                       type="number"
-                      value={formData.prefAgeMax}
-                      onChange={(e) => setFormData({ ...formData, prefAgeMax: Number(e.target.value) })}
+                      value={formData.prefAgeMax ?? 35}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        setFormData((prev: any) => ({ ...prev, prefAgeMax: isNaN(val) ? '' : val }));
+                      }}
                       className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-center text-[#F5F3FA]"
                       placeholder="Max"
                     />
@@ -731,7 +788,7 @@ export default function ProfileEditWizardPage() {
                     প্রত্যাশিত জেলা
                   </label>
                   <select
-                    value={formData.prefDistrict}
+                    value={formData.prefDistrict || ''}
                     onChange={(e) => setFormData({ ...formData, prefDistrict: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                   >
