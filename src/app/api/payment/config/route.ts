@@ -2,9 +2,14 @@ import { NextResponse } from 'next/server';
 import { isStripeConfigured } from '@/lib/stripe';
 
 export async function GET() {
-  const enabled = isStripeConfigured();
+  const stripeEnabled = isStripeConfigured();
+  const bkashNumber = process.env.BKASH_NUMBER || '01700000000';
+
   return NextResponse.json({
-    stripeEnabled: enabled,
-    publishableKey: enabled ? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || null : null,
+    stripeEnabled,
+    bkashEnabled: true,
+    bkashNumber,
+    publishableKey: stripeEnabled ? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || null : null,
   });
 }
+

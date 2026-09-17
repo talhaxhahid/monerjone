@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { BD_DISTRICTS, isBDPhone } from '@/lib/utils';
-import { User, Phone, Lock, Calendar, MapPin, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { User, Phone, Lock, Calendar, MapPin, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Heart } from 'lucide-react';
 import BrandLogo from '@/components/layout/BrandLogo';
 
 export default function SignupPage() {
@@ -72,21 +72,91 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl">
+    <div className="min-h-[90vh] flex items-center justify-center px-4 py-8 sm:py-12">
+      <div className="w-full max-w-6xl rounded-3xl bg-[#1F1640] border border-white/10 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl">
         
-        {/* Header */}
-        <div className="text-center mb-8 flex flex-col items-center">
-          <div className="mb-3">
-            <BrandLogo href="/" size="lg" />
+        {/* ================= LEFT / SIDE IMAGE BANNER (DESKTOP ONLY) ================= */}
+        <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 overflow-hidden bg-[#150E2B]">
+          {/* Background Image with layered overlays */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
+            style={{ backgroundImage: "url('/images/hero-og.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#150E2B] via-[#1F1640]/80 to-[#331A5C]/75 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,77,126,0.25)_0%,_transparent_70%)] pointer-events-none" />
+
+          {/* Top Brand Logo */}
+          <div className="relative z-10">
+            <BrandLogo href="/" size="md" />
           </div>
-          <p className="text-sm text-[#B9AFD1] mt-1">
-            সহজেই আপনার অ্যাকাউন্ট তৈরি করে মনের মতো জীবনসঙ্গী খুঁজুন
-          </p>
+
+          {/* Center Info & Benefits */}
+          <div className="relative z-10 space-y-5 my-auto py-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF4D7E]/20 text-[#FF4D7E] text-xs font-semibold border border-[#FF4D7E]/30 backdrop-blur-md">
+              <Sparkles className="w-3.5 h-3.5 text-[#F5B942]" />
+              <span>বিনামূল্যে বায়োডাটা রেজিস্ট্রেশন</span>
+            </div>
+
+            <h2 className="text-2xl font-bold text-[#F5F3FA] leading-snug font-serif">
+              আজই তৈরি করুন আপনার শরীয়াহ সম্মত বিয়ের বায়োডাটা
+            </h2>
+
+            <p className="text-xs text-[#B9AFD1] leading-relaxed">
+              MonerJone প্ল্যাটফর্মে অ্যাকাউন্ট খুলে সম্পূর্ণ বিশ্বস্ত পরিবেশে দ্বীনদার পাত্র বা পাত্রীর সন্ধান পান।
+            </p>
+
+            {/* Registration Benefits List */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-2.5 text-xs text-[#F5F3FA]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>সম্পূর্ণ বিনামূল্যে বায়োডাটা তৈরি ও সম্পাদনা</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-[#F5F3FA]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>জেলা, পেশা ও শিক্ষাগত যোগ্যতা অনুযায়ী ফিল্টারিং</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-[#F5F3FA]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>পছন্দের তালিকা তৈরি ও নিরাপদ বার্তা আদান-প্রদান</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-xs text-[#F5F3FA]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>মোবাইল নম্বর ও তথ্যের সর্বোচ্চ সুরক্ষা ও গোপনীয়তা</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Trust Note */}
+          <div className="relative z-10 flex items-center gap-2 text-xs text-[#8B7FA8] pt-4 border-t border-white/10">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>শরীয়াহ সম্মত নিয়ম ও শতভাগ গোপনীয়তা সংরক্ষিত</span>
+          </div>
         </div>
 
-        {/* Card Form */}
-        <div className="rounded-3xl bg-[#1F1640] border border-white/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        {/* ================= RIGHT / FORM CONTAINER (ALL SCREENS) ================= */}
+        <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
+          
+          {/* Mobile Header Logo */}
+          <div className="text-center mb-6 lg:hidden flex flex-col items-center">
+            <div className="mb-2">
+              <BrandLogo href="/" size="md" />
+            </div>
+            <p className="text-xs text-[#B9AFD1]">
+              সহজেই আপনার অ্যাকাউন্ট তৈরি করুন
+            </p>
+          </div>
+
+          {/* Desktop Heading */}
+          <div className="hidden lg:block mb-6">
+            <h1 className="text-2xl font-bold text-[#F5F3FA] font-serif flex items-center gap-2">
+              <span>ফ্রি অ্যাকাউন্ট নিবন্ধন</span>
+              <Heart className="w-5 h-5 text-[#FF4D7E] fill-[#FF4D7E]" />
+            </h1>
+            <p className="text-xs text-[#B9AFD1] mt-1">
+              সঠিক তথ্য প্রদান করে কয়েক মিনিটে আপনার বায়োডাটা প্রোফাইল তৈরি করুন
+            </p>
+          </div>
+
           {error && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/40 text-xs font-medium text-rose-200">
               {error}
@@ -104,7 +174,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: 'Male' })}
-                  className={`py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     formData.gender === 'Male'
                       ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
                       : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
@@ -115,7 +185,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, gender: 'Female' })}
-                  className={`py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     formData.gender === 'Female'
                       ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
                       : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
@@ -141,7 +211,7 @@ export default function SignupPage() {
                     placeholder="যেমন: তারিক"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs placeholder:text-[#8B7FA8] focus:outline-none focus:border-[#FF4D7E] transition-colors"
                     required
                   />
                 </div>
@@ -156,7 +226,7 @@ export default function SignupPage() {
                   placeholder="যেমন: রহমান"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs placeholder:text-[#8B7FA8] focus:outline-none focus:border-[#FF4D7E] transition-colors"
                   required
                 />
               </div>
@@ -176,7 +246,7 @@ export default function SignupPage() {
                     type="date"
                     value={formData.dob}
                     onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
                     required
                   />
                 </div>
@@ -189,7 +259,7 @@ export default function SignupPage() {
                 <select
                   value={formData.maritalStatus}
                   onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
                 >
                   <option value="Never Married">অবিবাহিত</option>
                   <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
@@ -212,7 +282,7 @@ export default function SignupPage() {
                   <select
                     value={formData.district}
                     onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
                   >
                     {BD_DISTRICTS.map((d) => (
                       <option key={d} value={d}>
@@ -230,7 +300,7 @@ export default function SignupPage() {
                 <select
                   value={formData.religion}
                   onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
                 >
                   <option value="Islam">ইসলাম (Islam)</option>
                   <option value="Hindu">হিন্দু (Hinduism)</option>
@@ -253,7 +323,7 @@ export default function SignupPage() {
                   placeholder="01XXXXXXXXX"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs placeholder:text-[#8B7FA8] focus:outline-none focus:border-[#FF4D7E] transition-colors"
                   required
                 />
               </div>
@@ -273,7 +343,7 @@ export default function SignupPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs placeholder:text-[#8B7FA8] focus:outline-none focus:border-[#FF4D7E] transition-colors"
                   required
                 />
               </div>
@@ -301,7 +371,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/30 hover:opacity-95 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/30 hover:opacity-95 transform active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -321,18 +391,12 @@ export default function SignupPage() {
               ইতিমধ্যে অ্যাকাউন্ট আছে?{' '}
               <Link
                 href="/login"
-                className="font-semibold text-[#FF4D7E] hover:text-[#FF4D7E]/80 underline underline-offset-4 ml-1"
+                className="font-bold text-[#FF4D7E] hover:text-[#FF4D7E]/80 underline underline-offset-4 ml-1"
               >
                 লগইন করুন
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Security badge note */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[#8B7FA8]">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>শরীয়াহ সম্মত নিয়ম ও সম্পূর্ণ গোপনীয়তা নিশ্চিত</span>
         </div>
       </div>
     </div>

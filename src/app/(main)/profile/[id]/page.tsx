@@ -16,17 +16,13 @@ import {
   Sparkles,
   Lock,
   Share2,
-  Flag,
   Ban,
   CheckCircle2,
-  Calendar,
-  BookOpen,
-  Utensils,
-  Eye,
   Users
 } from 'lucide-react';
 import { bn, cmToFeetInches } from '@/lib/utils';
 import UpgradeModal from '@/components/ui/UpgradeModal';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export default function ProfileDetailPage() {
   const params = useParams();
@@ -34,7 +30,7 @@ export default function ProfileDetailPage() {
   const id = params?.id as string;
   const { user, addToast } = useAuth();
 
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activePhotoIdx, setActivePhotoIdx] = useState<number>(0);
   const [isFav, setIsFav] = useState<boolean>(false);
@@ -167,8 +163,8 @@ export default function ProfileDetailPage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
-        <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-xs text-slate-400">বায়োডাটা লোড হচ্ছে...</p>
+        <div className="w-10 h-10 border-2 border-[#FF4D7E] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-xs text-[#8B7FA8]">বায়োডাটা লোড হচ্ছে...</p>
       </div>
     );
   }
@@ -176,9 +172,9 @@ export default function ProfileDetailPage() {
   if (!profile) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-200">বায়োডাটা পাওয়া যায়নি</h2>
-        <p className="text-xs text-slate-400">প্রোফাইলটি মুছে ফেলা হয়েছে বা লিংকটি সঠিক নয়।</p>
-        <Link href="/search" className="inline-block px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950">
+        <h2 className="text-xl font-bold text-[#F5F3FA]">বায়োডাটা পাওয়া যায়নি</h2>
+        <p className="text-xs text-[#8B7FA8]">প্রোফাইলটি মুছে ফেলা হয়েছে বা লিংকটি সঠিক নয়।</p>
+        <Link href="/search" className="inline-block px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FF4D7E] hover:bg-[#E63465] text-white transition-all">
           অন্যান্য বায়োডাটা খুঁজুন
         </Link>
       </div>
@@ -192,40 +188,46 @@ export default function ProfileDetailPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Top Banner & Profile Header */}
-      <div className="rounded-3xl bg-slate-900/90 border border-amber-500/25 p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+      <div className="rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/25 p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Photo Gallery Column (Lg 4 cols) */}
           <div className="lg:col-span-4 space-y-3">
-            <div className="relative aspect-[4/5] rounded-2xl bg-slate-950 overflow-hidden border border-amber-500/20 shadow-lg">
-              {profile.photos && profile.photos.length > 0 ? (
-                <img
-                  src={profile.photos[activePhotoIdx] || profile.photos[0]}
-                  alt={profile.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-slate-500">
-                  <div className="w-24 h-24 rounded-full bg-slate-900 border border-amber-500/30 flex items-center justify-center text-4xl font-bold text-amber-300 mb-2">
-                    {profile.firstName ? profile.firstName[0].toUpperCase() : 'U'}
-                  </div>
-                  <span className="text-xs text-slate-400">ছবি প্রদান করা হয়নি</span>
-                </div>
-              )}
+            <div className="relative aspect-[4/5] rounded-2xl bg-[#150E2B] overflow-hidden border border-[#FF4D7E]/20 shadow-lg">
+              <ImageWithFallback
+                src={profile.photos && profile.photos.length > 0 ? (profile.photos[activePhotoIdx] || profile.photos[0]) : null}
+                alt={profile.name}
+                gender={profile.gender}
+                name={profile.name}
+                fallbackType="avatar"
+                showFallbackLabel={true}
+                className="w-full h-full object-cover"
+              />
 
-              {/* Match Score Badge */}
-              {profile.matchScore && (
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold bg-slate-950/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
-                  <Sparkles className="w-3.5 h-3.5" />
+              {/* 1. TOP-LEFT: Premium Tier Badge OR Match Score Badge */}
+              {profile.premium === 'Platinum' ? (
+                <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-indigo-100 via-white to-indigo-200 text-indigo-950 border border-white/80 shadow-lg shadow-indigo-950/40 flex items-center gap-1.5 shimmer-badge">
+                  <Crown className="w-4 h-4 text-indigo-700 shrink-0" />
+                  <span>প্লাটিনাম মেম্বার</span>
+                </div>
+              ) : profile.premium === 'Gold' ? (
+                <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#FFFBEB] via-[#F5B942] to-[#E5A934] text-[#291704] border border-[#FEF3C7]/80 shadow-lg shadow-amber-950/40 flex items-center gap-1.5 shimmer-badge">
+                  <Crown className="w-4 h-4 text-[#291704] shrink-0" />
+                  <span>গোল্ড মেম্বার</span>
+                </div>
+              ) : profile.matchScore ? (
+                <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-[#150E2B]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{profile.matchScore}% ম্যাচ</span>
                 </div>
-              )}
+              ) : null}
 
-              {profile.premium !== 'Free' && (
-                <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-slate-950 shadow-md flex items-center gap-1 shimmer-badge">
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>{bn(profile.premium)} মেম্বার</span>
+              {/* 2. BOTTOM-LEFT: Match Score Badge (When user is Premium) */}
+              {profile.premium !== 'Free' && profile.matchScore && (
+                <div className="absolute bottom-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-[#150E2B]/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{profile.matchScore}% ম্যাচ</span>
                 </div>
               )}
             </div>
@@ -238,10 +240,15 @@ export default function ProfileDetailPage() {
                     key={idx}
                     onClick={() => setActivePhotoIdx(idx)}
                     className={`w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activePhotoIdx === idx ? 'border-amber-400 scale-105' : 'border-transparent opacity-60'
+                      activePhotoIdx === idx ? 'border-[#FF4D7E] scale-105' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
-                    <img src={ph} alt="thumbnail" className="w-full h-full object-cover" />
+                    <ImageWithFallback
+                      src={ph}
+                      alt={`thumbnail-${idx}`}
+                      fallbackType="thumbnail"
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -254,13 +261,13 @@ export default function ProfileDetailPage() {
               
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif flex items-center gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif flex items-center gap-2">
                     <span>{profile.name}</span>
                     {profile.profileComplete && (
                       <CheckCircle2 className="w-6 h-6 text-sky-400" />
                     )}
                   </h1>
-                  <span className="text-xs text-amber-400 font-mono mt-0.5 block">
+                  <span className="text-xs text-[#FF4D7E] font-mono mt-0.5 block">
                     বায়োডাটা আইডি: #MJ-{profile.id.substring(0, 7).toUpperCase()}
                   </span>
                 </div>
@@ -269,17 +276,17 @@ export default function ProfileDetailPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleShare}
-                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-700 hover:border-amber-400/60 text-slate-300 hover:text-white transition-colors"
+                    className="p-2.5 rounded-xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/60 text-[#B9AFD1] hover:text-white transition-colors cursor-pointer"
                     title="লিংক কপি করুন"
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handleToggleFavorite}
-                    className={`p-2.5 rounded-xl border transition-all ${
+                    className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                       isFav
                         ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
-                        : 'bg-slate-950 border-slate-700 text-slate-300 hover:text-rose-400'
+                        : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:text-[#FF4D7E]'
                     }`}
                     title="পছন্দের তালিকা"
                   >
@@ -290,26 +297,26 @@ export default function ProfileDetailPage() {
 
               {/* Tag Pills */}
               <div className="flex flex-wrap gap-2 pt-1">
-                <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700">
+                <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10">
                   বয়স: {profile.age} বছর
                 </span>
                 {profile.district && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-amber-400" /> {profile.district}
+                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-[#FF4D7E]" /> {profile.district}
                   </span>
                 )}
                 {profile.maritalStatus && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700">
+                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10">
                     {bn(profile.maritalStatus)}
                   </span>
                 )}
                 {profile.occupation && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-amber-400" /> {profile.occupation}
+                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10 flex items-center gap-1">
+                    <Briefcase className="w-3.5 h-3.5 text-[#FF4D7E]" /> {profile.occupation}
                   </span>
                 )}
                 {profile.prayerFrequency && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#FF4D7E]/10 text-[#FF4D7E] border border-[#FF4D7E]/30">
                     {bn(profile.prayerFrequency)}
                   </span>
                 )}
@@ -317,12 +324,12 @@ export default function ProfileDetailPage() {
 
               {/* Introduction */}
               {profile.introduction && (
-                <div className="mt-4 p-4 rounded-2xl bg-slate-950/60 border border-white/5">
-                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                <div className="mt-4 p-4 rounded-2xl bg-[#150E2B]/60 border border-white/5">
+                  <span className="text-[11px] font-bold text-[#FF4D7E] uppercase tracking-wider block mb-1">
                     সংক্ষিপ্ত পরিচিতি:
                   </span>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
-                    "{profile.introduction}"
+                  <p className="text-xs sm:text-sm text-[#B9AFD1] leading-relaxed italic">
+                    &ldquo;{profile.introduction}&rdquo;
                   </p>
                 </div>
               )}
@@ -330,7 +337,7 @@ export default function ProfileDetailPage() {
 
             {/* Actions Card Footer */}
             {!isSelf && (
-              <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-[#150E2B] border border-[#FF4D7E]/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 {/* Phone Unlock Button */}
                 <div className="flex-1">
                   {phoneUnlocked && phoneNumber ? (
@@ -344,13 +351,13 @@ export default function ProfileDetailPage() {
                     <button
                       onClick={handleUnlockPhone}
                       disabled={unlockLoading}
-                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#331A5C] hover:bg-[#4B2380] text-[#F5F3FA] border border-white/10 flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       {unlockLoading ? (
-                        <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-[#FF4D7E] border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
-                          <Lock className="w-4 h-4 text-amber-400" />
+                          <Lock className="w-4 h-4 text-[#FF4D7E]" />
                           <span>মোবাইল নম্বর আনলক করুন</span>
                         </>
                       )}
@@ -361,7 +368,7 @@ export default function ProfileDetailPage() {
                 {/* Send Message Button */}
                 <Link
                   href={`/inbox?to=${profile.id}`}
-                  className="flex-1 py-2.5 px-5 rounded-xl text-xs font-bold text-center bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-md shadow-amber-500/25 flex items-center justify-center gap-2 transition-all"
+                  className="flex-1 py-2.5 px-5 rounded-xl text-xs font-bold text-center bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-md shadow-[#FF4D7E]/25 flex items-center justify-center gap-2 transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>মেসেজ দিন</span>
@@ -376,154 +383,154 @@ export default function ProfileDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* 1. Basic & Physical Details */}
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/15 shadow-xl space-y-4">
-          <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
-            <span className="text-amber-400">👤</span>
+        <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <span className="text-[#FF4D7E]">👤</span>
             মৌলিক ও শারীরিক তথ্য
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block">উচ্চতা:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{heightStr}</span>
+              <span className="text-[#8B7FA8] block">উচ্চতা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{heightStr}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">ওজন:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.weightKg ? `${profile.weightKg} কেজি` : 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">ওজন:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.weightKg ? `${profile.weightKg} কেজি` : 'দেওয়া হয়নি'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">ধর্ম:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{bn(profile.religion)}</span>
+              <span className="text-[#8B7FA8] block">ধর্ম:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.religion)}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">সন্তান বিবরণ:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{bn(profile.children) || 'প্রযোজ্য নয়'}</span>
+              <span className="text-[#8B7FA8] block">সন্তান বিবরণ:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.children) || 'প্রযোজ্য নয়'}</span>
             </div>
             <div className="col-span-2">
-              <span className="text-slate-400 block">ভাষাসমূহ:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.languages || 'বাংলা'}</span>
+              <span className="text-[#8B7FA8] block">ভাষাসমূহ:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.languages || 'বাংলা'}</span>
             </div>
           </div>
         </div>
 
         {/* 2. Education & Career */}
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/15 shadow-xl space-y-4">
-          <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
-            <GraduationCap className="w-5 h-5 text-amber-400" />
+        <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <GraduationCap className="w-5 h-5 text-[#FF4D7E]" />
             শিক্ষাগত ও পেশাগত তথ্য
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block">শিক্ষাগত যোগ্যতা:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{bn(profile.education) || 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">শিক্ষাগত যোগ্যতা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.education) || 'দেওয়া হয়নি'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">বিষয় / বিভাগ:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.subject || 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">বিষয় / বিভাগ:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.subject || 'দেওয়া হয়নি'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">পেশা / কর্মক্ষেত্র:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.occupation || 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">পেশা / কর্মক্ষেত্র:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.occupation || 'দেওয়া হয়নি'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">মাসিক আয়:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.income || 'ব্যক্তিগত'}</span>
+              <span className="text-[#8B7FA8] block">মাসিক আয়:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.income || 'ব্যক্তিগত'}</span>
             </div>
           </div>
         </div>
 
         {/* 3. Religious Practices & Deen */}
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/15 shadow-xl space-y-4">
-          <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
-            <span className="text-amber-400">🕌</span>
+        <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <span className="text-[#FF4D7E]">🕌</span>
             ধর্মীয় ও লাইফস্টাইল বিবরণ
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block">নামাজ আদায়:</span>
-              <span className="font-semibold text-amber-300 mt-0.5 block">{bn(profile.prayerFrequency) || 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">নামাজ আদায়:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.prayerFrequency) || 'দেওয়া হয়নি'}</span>
             </div>
             {profile.gender === 'Female' && (
               <div>
-                <span className="text-slate-400 block">হিজাব ও পর্দা:</span>
+                <span className="text-[#8B7FA8] block">হিজাব ও পর্দা:</span>
                 <span className="font-semibold text-purple-300 mt-0.5 block">{bn(profile.hijabNiqab) || 'দেওয়া হয়নি'}</span>
               </div>
             )}
             <div>
-              <span className="text-slate-400 block">ধূমপান:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{bn(profile.smoking) || 'না'}</span>
+              <span className="text-[#8B7FA8] block">ধূমপান:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.smoking) || 'না'}</span>
             </div>
             {profile.favoriteBooks && (
               <div className="col-span-2">
-                <span className="text-slate-400 block">প্রিয় বই:</span>
-                <span className="font-semibold text-slate-200 mt-0.5 block">{profile.favoriteBooks}</span>
+                <span className="text-[#8B7FA8] block">প্রিয় বই:</span>
+                <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.favoriteBooks}</span>
               </div>
             )}
             {profile.favoriteFood && (
               <div className="col-span-2">
-                <span className="text-slate-400 block">প্রিয় খাবার:</span>
-                <span className="font-semibold text-slate-200 mt-0.5 block">{profile.favoriteFood}</span>
+                <span className="text-[#8B7FA8] block">প্রিয় খাবার:</span>
+                <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.favoriteFood}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* 4. Family Background */}
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/15 shadow-xl space-y-4">
-          <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
-            <Users className="w-5 h-5 text-amber-400" />
+        <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <Users className="w-5 h-5 text-[#FF4D7E]" />
             পারিবারিক তথ্য
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block">পারিবারিক অর্থনৈতিক অবস্থা:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{bn(profile.familyStatus) || 'মধ্যবিত্ত'}</span>
+              <span className="text-[#8B7FA8] block">পারিবারিক অর্থনৈতিক অবস্থা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.familyStatus) || 'মধ্যবিত্ত'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">পিতার পেশা:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.fatherOccupation || 'দেওয়া হয়নি'}</span>
+              <span className="text-[#8B7FA8] block">পিতার পেশা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.fatherOccupation || 'দেওয়া হয়নি'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">মাতার পেশা:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.motherOccupation || 'গৃহিণী'}</span>
+              <span className="text-[#8B7FA8] block">মাতার পেশা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.motherOccupation || 'গৃহিণী'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block">ভাই ও বোন:</span>
-              <span className="font-semibold text-slate-200 mt-0.5 block">{profile.brothers || 0} ভাই, {profile.sisters || 0} বোন</span>
+              <span className="text-[#8B7FA8] block">ভাই ও বোন:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.brothers || 0} ভাই, {profile.sisters || 0} বোন</span>
             </div>
           </div>
         </div>
 
         {/* 5. Partner Requirements & Preferences */}
-        <div className="col-span-1 md:col-span-2 p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-amber-500/25 shadow-xl space-y-4">
-          <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
-            <Sparkles className="w-5 h-5 text-amber-400" />
+        <div className="col-span-1 md:col-span-2 p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl space-y-4">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <Sparkles className="w-5 h-5 text-[#FF4D7E]" />
             যেমন জীবনসঙ্গী প্রত্যাশা করেন
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-400 block">প্রত্যাশিত বয়স সীমা:</span>
-              <span className="font-bold text-amber-300 mt-1 block">
+            <div className="p-3.5 rounded-2xl bg-[#150E2B] border border-white/10">
+              <span className="text-[#8B7FA8] block">প্রত্যাশিত বয়স সীমা:</span>
+              <span className="font-bold text-[#FF4D7E] mt-1 block">
                 {profile.prefAgeMin || 18} - {profile.prefAgeMax || 45} বছর
               </span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-400 block">প্রত্যাশিত জেলা:</span>
-              <span className="font-bold text-slate-200 mt-1 block">
+            <div className="p-3.5 rounded-2xl bg-[#150E2B] border border-white/10">
+              <span className="text-[#8B7FA8] block">প্রত্যাশিত জেলা:</span>
+              <span className="font-bold text-[#F5F3FA] mt-1 block">
                 {profile.prefDistrict || 'যেকোনো জেলা'}
               </span>
             </div>
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-400 block">প্রত্যাশিত শিক্ষাগত যোগ্যতা:</span>
-              <span className="font-bold text-slate-200 mt-1 block">
+            <div className="p-3.5 rounded-2xl bg-[#150E2B] border border-white/10">
+              <span className="text-[#8B7FA8] block">প্রত্যাশিত শিক্ষাগত যোগ্যতা:</span>
+              <span className="font-bold text-[#F5F3FA] mt-1 block">
                 {bn(profile.prefEducation) || 'যেকোনো'}
               </span>
             </div>
           </div>
 
           {profile.lookingFor && (
-            <div className="mt-4 p-4 rounded-2xl bg-slate-950 border border-white/5 text-xs sm:text-sm text-slate-300 leading-relaxed">
-              <span className="font-bold text-amber-400 block mb-1">জীবনসঙ্গী সংক্রান্ত বিস্তারিত বিবরণ:</span>
+            <div className="mt-4 p-4 rounded-2xl bg-[#150E2B] border border-white/5 text-xs sm:text-sm text-[#B9AFD1] leading-relaxed">
+              <span className="font-bold text-[#FF4D7E] block mb-1">জীবনসঙ্গী সংক্রান্ত বিস্তারিত বিবরণ:</span>
               {profile.lookingFor}
             </div>
           )}
@@ -532,15 +539,15 @@ export default function ProfileDetailPage() {
 
       {/* Safety & Moderation Actions */}
       {!isSelf && (
-        <div className="pt-4 flex items-center justify-between border-t border-slate-800 text-xs text-slate-400">
+        <div className="pt-4 flex items-center justify-between border-t border-white/10 text-xs text-[#8B7FA8]">
           <button
             onClick={handleBlockUser}
-            className="flex items-center gap-1.5 hover:text-rose-400 transition-colors"
+            className="flex items-center gap-1.5 hover:text-rose-400 transition-colors cursor-pointer"
           >
             <Ban className="w-4 h-4" />
             <span>এই প্রোফাইল ব্লক করুন</span>
           </button>
-          <span className="flex items-center gap-1 text-slate-500">
+          <span className="flex items-center gap-1 text-[#8B7FA8]">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             যাচাইকৃত বায়োডাটা
           </span>

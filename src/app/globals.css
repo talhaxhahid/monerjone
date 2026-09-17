@@ -126,7 +126,7 @@
   box-shadow: 0 8px 24px rgba(245, 185, 66, 0.35);
 }
 
-/* Shimmer animation for premium badges */
+/* Shimmer animation for premium badges & skeletons */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -144,3 +144,18 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
   animation: shimmer 2.5s infinite;
 }
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #1F1640;
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 77, 126, 0.15), transparent);
+  animation: shimmer 1.8s infinite;
+}
+

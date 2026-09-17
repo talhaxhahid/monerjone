@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateAge, computeMatchScore } from '@/lib/utils';
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
     const ageMaxParam = searchParams.get('ageMax');
     const sortParam = searchParams.get('sort') || 'newest';
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     // Opposite-gender rule enforced if logged in
     if (me) {
@@ -38,8 +40,8 @@ export async function GET(request: NextRequest) {
       });
 
       const blockedIds = [
-        ...blocksGiven.map((b) => b.targetId),
-        ...blocksReceived.map((b) => b.userId),
+        ...blocksGiven.map((b: { targetId: string }) => b.targetId),
+        ...blocksReceived.map((b: { userId: string }) => b.userId),
       ];
 
       if (blockedIds.length > 0) {
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Profile relation conditions
-    const profileWhere: any = {};
+    const profileWhere: Record<string, unknown> = {};
     if (educationParam && educationParam !== 'All') {
       profileWhere.education = educationParam;
     }
@@ -79,13 +81,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Determine sort
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Record<string, unknown> = { createdAt: 'desc' };
     if (sortParam === 'active') {
       orderBy = { lastActive: 'desc' };
     }
 
     const users = await prisma.user.findMany({
-      where,
+      where: where as any,
       include: {
         profile: true,
         photos: {
@@ -93,7 +95,7 @@ export async function GET(request: NextRequest) {
           orderBy: { position: 'asc' },
         },
       },
-      orderBy,
+      orderBy: orderBy as any,
     });
 
     // Favorites set
@@ -103,12 +105,12 @@ export async function GET(request: NextRequest) {
         where: { userId: me.id },
         select: { targetId: true },
       });
-      myFavorites = new Set(favs.map((f) => f.targetId));
+      myFavorites = new Set(favs.map((f: { targetId: string }) => f.targetId));
     }
 
-    let profiles = users.map((u) => {
+    let profiles = users.map((u: any) => {
       const age = calculateAge(u.dob);
-      const photoIds = u.photos.map((p) => p.id);
+      const photoIds = u.photos.map((p: { id: string }) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = me ? computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency }) : 88;
 
@@ -134,7 +136,7 @@ export async function GET(request: NextRequest) {
         lastActive: u.lastActive.toISOString(),
         active: isOnline,
         photoIds,
-        photos: photoIds.map((id) => `/api/photos/${id}`),
+        photos: photoIds.map((id: string) => `/api/photos/${id}`),
         favorited: myFavorites.has(u.id),
         matchScore,
         createdAt: u.createdAt.toISOString(),
@@ -144,25 +146,45 @@ export async function GET(request: NextRequest) {
     // Filter age
     if (ageMinParam) {
       const min = parseInt(ageMinParam, 10);
-      profiles = profiles.filter((p) => p.age >= min);
+      profiles = profiles.filter((p: { age: number }) => p.age >= min);
     }
     if (ageMaxParam) {
       const max = parseInt(ageMaxParam, 10);
-      profiles = profiles.filter((p) => p.age <= max);
+      profiles = profiles.filter((p: { age: number }) => p.age <= max);
     }
 
-    // Sort by premium if selected
-    if (sortParam === 'premium') {
-      profiles.sort((a, b) => {
-        const scoreA = a.premium === 'Platinum' ? 2 : a.premium === 'Gold' ? 1 : 0;
-        const scoreB = b.premium === 'Platinum' ? 2 : b.premium === 'Gold' ? 1 : 0;
-        return scoreB - scoreA;
-      });
-    }
+    // Priority Ranking: Platinum (VIP) > Gold > Free, then sorted by chosen criterion
+    profiles.sort((a: { premium: string; active: boolean; createdAt: string }, b: { premium: string; active: boolean; createdAt: string }) => {
+      const tierRank = { Platinum: 2, Gold: 1, Free: 0 };
+      const rankA = tierRank[a.premium as keyof typeof tierRank] || 0;
+      const rankB = tierRank[b.premium as keyof typeof tierRank] || 0;
+
+      if (sortParam === 'premium') {
+        return rankB - rankA;
+      }
+
+      if (sortParam === 'active') {
+        // If sorting by active, prioritize active status, then tier
+        if (a.active !== b.active) {
+          return a.active ? -1 : 1;
+        }
+        return rankB - rankA;
+      }
+
+      // Default (newest / standard search): Boost Platinum & Gold to the top as per package promises
+      if (rankB !== rankA) {
+        return rankB - rankA;
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
     return NextResponse.json({ profiles });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'সার্ভার ত্রুটি';
     console.error('Error in GET /api/profiles:', error);
-    return NextResponse.json({ error: error.message || 'সার্ভার ত্রুটি' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+

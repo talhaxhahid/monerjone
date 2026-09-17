@@ -246,26 +246,36 @@ async function main() {
   // 4. Sample Pending bKash Payment
   const sampleUser = await prisma.user.findFirst({ where: { phone: '01733333333' } });
   if (sampleUser) {
-    await prisma.paymentRequest.create({
-      data: {
-        userId: sampleUser.id,
-        plan: 'Gold',
-        amount: 1350,
-        bKashNumber: '01733333333',
-        trxId: 'BK928374XA',
-        status: 'PENDING',
-      },
+    const existingPayment = await prisma.paymentRequest.findFirst({
+      where: { trxId: 'BK928374XA' },
     });
+    if (!existingPayment) {
+      await prisma.paymentRequest.create({
+        data: {
+          userId: sampleUser.id,
+          plan: 'Gold',
+          amount: 1350,
+          bKashNumber: '01733333333',
+          trxId: 'BK928374XA',
+          status: 'PENDING',
+        },
+      });
+    }
   }
 
-  console.log('MonerJone database seed finished successfully!');
+  console.log('✅ MonerJone database seed finished successfully!');
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+export { main as seedDatabase };
+
+if (require.main === module || !process.env.NEXT_RUNTIME) {
+  main()
+    .catch((e) => {
+      console.error('❌ Seed error:', e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
+

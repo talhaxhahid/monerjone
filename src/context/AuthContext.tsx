@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/40 shadow-emerald-900/40'
                 : t.type === 'error'
                 ? 'bg-rose-950/90 text-rose-200 border-rose-500/40 shadow-rose-900/40'
-                : 'bg-slate-900/90 text-slate-100 border-amber-500/30 shadow-black/50'
+                : 'bg-[#1F1640]/95 text-[#F5F3FA] border-[#FF4D7E]/30 shadow-black/50'
             }`}
           >
             <span>{t.message}</span>

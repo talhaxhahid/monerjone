@@ -32,14 +32,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const { userId, planName, phoneQuota } = session.metadata || {};
+    const { userId, planName } = session.metadata || {};
 
     if (!userId || !planName) {
       return NextResponse.json({ error: 'Metadata missing in session' }, { status: 400 });
     }
 
     const tier: PlanTierType = planName === 'Platinum' ? 'Platinum' : 'Gold';
-    const additionalQuota = Number(phoneQuota) || (tier === 'Platinum' ? 10 : 3);
     const amountTotal = session.amount_total ? Math.round(session.amount_total / 100) : (tier === 'Platinum' ? 2499 : 1350);
 
     // Upgrade user
@@ -48,9 +47,6 @@ export async function GET(req: NextRequest) {
       data: {
         premium: tier,
         premiumActivatedAt: new Date(),
-        phoneQuota: {
-          increment: additionalQuota,
-        },
       },
       select: {
         id: true,
@@ -58,7 +54,6 @@ export async function GET(req: NextRequest) {
         lastName: true,
         phone: true,
         premium: true,
-        phoneQuota: true,
       },
     });
 

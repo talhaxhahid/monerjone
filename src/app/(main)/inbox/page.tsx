@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { bn, timeAgo } from '@/lib/utils';
 import UpgradeModal from '@/components/ui/UpgradeModal';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 import { ConversationSummary, MessageItem } from '@/types';
 
 function InboxContent() {
@@ -162,7 +163,7 @@ function InboxContent() {
   if (authLoading || !user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#FF4D7E] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -173,23 +174,23 @@ function InboxContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="h-[80vh] min-h-[550px] rounded-3xl bg-slate-900/90 border border-amber-500/25 shadow-2xl backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
+      <div className="h-[80vh] min-h-[550px] rounded-3xl bg-[#1F1640]/95 border border-[#FF4D7E]/20 shadow-2xl backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
         
         {/* ================= LEFT: CONVERSATIONS LIST ================= */}
         <div
-          className={`md:col-span-4 lg:col-span-4 border-r border-slate-800 flex flex-col h-full bg-slate-950/60 ${
+          className={`md:col-span-4 lg:col-span-4 border-r border-white/10 flex flex-col h-full bg-[#150E2B]/80 ${
             activeConvId ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* List Header */}
-          <div className="p-4 border-b border-slate-800 space-y-3">
+          <div className="p-4 border-b border-white/10 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg font-bold text-[#F5F3FA] flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-[#FF4D7E]" />
                 <span>মেসেজ ইনবক্স</span>
               </h2>
               {user.premium === 'Free' && (
-                <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
+                <span className="text-[10px] font-bold text-[#F5B942] bg-[#F5B942]/10 px-2 py-0.5 rounded-full border border-[#F5B942]/30">
                   ফ্রি (সীমিত মেসেজ)
                 </span>
               )}
@@ -197,13 +198,13 @@ function InboxContent() {
 
             {/* Search filter input */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-[#8B7FA8] absolute left-3 top-2.5" />
               <input
                 type="text"
                 placeholder="ইনবক্স সার্চ করুন..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E] placeholder:text-[#8B7FA8]"
               />
             </div>
           </div>
@@ -211,7 +212,7 @@ function InboxContent() {
           {/* Conversations Items */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {loadingList ? (
-              <div className="p-6 text-center text-xs text-slate-500">লোড হচ্ছে...</div>
+              <div className="p-6 text-center text-xs text-[#8B7FA8]">লোড হচ্ছে...</div>
             ) : filteredConversations.length > 0 ? (
               filteredConversations.map((c) => {
                 const isSelected = activeConvId === c.id;
@@ -224,46 +225,42 @@ function InboxContent() {
                     }}
                     className={`w-full p-3 rounded-2xl flex items-center gap-3 transition-all text-left ${
                       isSelected
-                        ? 'bg-amber-500/15 border border-amber-500/40 text-slate-100 shadow-md'
-                        : 'hover:bg-slate-900/80 text-slate-300'
+                        ? 'bg-[#FF4D7E]/15 border border-[#FF4D7E]/40 text-[#F5F3FA] shadow-md'
+                        : 'hover:bg-[#1F1640]/80 text-[#B9AFD1]'
                     }`}
                   >
                     {/* Avatar */}
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-800 shrink-0 border border-amber-500/20">
-                      {c.other.photoUrl ? (
-                        <img
-                          src={c.other.photoUrl}
-                          alt={c.other.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-amber-400">
-                          {c.other.name[0]}
-                        </div>
-                      )}
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden bg-[#331A5C] shrink-0 border border-[#FF4D7E]/20">
+                      <ImageWithFallback
+                        src={c.other.photoUrl}
+                        alt={c.other.name}
+                        name={c.other.name}
+                        fallbackType="avatar"
+                        className="w-full h-full object-cover"
+                      />
                       {c.other.active && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-950" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#150E2B] z-20" />
                       )}
                     </div>
 
                     {/* Meta info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-100 truncate">
+                        <span className="text-xs font-bold text-[#F5F3FA] truncate">
                           {c.other.name}
                         </span>
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-[#8B7FA8]">
                           {timeAgo(c.lastMessageAt)}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 truncate mt-0.5">
+                      <p className="text-xs text-[#8B7FA8] truncate mt-0.5">
                         {c.lastMessage?.text || 'নতুন কথোপকথন'}
                       </p>
                     </div>
 
                     {/* Unread badge */}
                     {c.unread > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-bold flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-[#FF4D7E] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
                         {c.unread}
                       </span>
                     )}
@@ -271,9 +268,9 @@ function InboxContent() {
                 );
               })
             ) : (
-              <div className="p-8 text-center text-xs text-slate-500 space-y-2">
+              <div className="p-8 text-center text-xs text-[#8B7FA8] space-y-2">
                 <p>কোনো মেসেজ পাওয়া যায়নি</p>
-                <p className="text-[11px] text-slate-600">
+                <p className="text-[11px] text-[#8B7FA8]">
                   পাত্র-পাত্রী সার্চ করে সরাসরি বার্তা পাঠান
                 </p>
               </div>
@@ -283,46 +280,42 @@ function InboxContent() {
 
         {/* ================= RIGHT: ACTIVE CHAT SCREEN ================= */}
         <div
-          className={`md:col-span-8 lg:col-span-8 flex flex-col h-full bg-slate-900/40 ${
+          className={`md:col-span-8 lg:col-span-8 flex flex-col h-full bg-[#150E2B]/50 ${
             !activeConvId ? 'hidden md:flex items-center justify-center' : 'flex'
           }`}
         >
           {activeConvId && activeRecipient ? (
             <>
               {/* Chat Top Header */}
-              <div className="p-4 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
+              <div className="p-4 border-b border-white/10 bg-[#150E2B]/90 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setActiveConvId(null)}
-                    className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white"
+                    className="md:hidden p-1.5 rounded-lg text-[#8B7FA8] hover:text-[#F5F3FA]"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
 
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-800 border border-amber-500/20">
-                    {activeRecipient.photoUrl ? (
-                      <img
-                        src={activeRecipient.photoUrl}
-                        alt={activeRecipient.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-bold text-amber-400">
-                        {activeRecipient.name[0]}
-                      </div>
-                    )}
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[#331A5C] border border-[#FF4D7E]/20 shrink-0">
+                    <ImageWithFallback
+                      src={activeRecipient.photoUrl}
+                      alt={activeRecipient.name}
+                      name={activeRecipient.name}
+                      fallbackType="avatar"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold text-[#F5F3FA] flex items-center gap-1.5">
                       <span>{activeRecipient.name}</span>
                       {activeRecipient.premium !== 'Free' && (
-                        <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded font-mono">
+                        <span className="text-[10px] text-[#F5B942] bg-[#F5B942]/10 px-1.5 py-0.2 rounded font-mono">
                           👑 {bn(activeRecipient.premium)}
                         </span>
                       )}
                     </h3>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-[#8B7FA8]">
                       {activeRecipient.active ? (
                         <span className="text-emerald-400">অনলাইনে আছেন</span>
                       ) : (
@@ -334,7 +327,7 @@ function InboxContent() {
 
                 <button
                   onClick={() => router.push(`/profile/${activeRecipient.id}`)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#331A5C] hover:bg-[#4B2380] text-[#F5F3FA] border border-white/10 transition-all cursor-pointer"
                 >
                   বায়োডাটা দেখুন
                 </button>
@@ -343,7 +336,7 @@ function InboxContent() {
               {/* Chat Messages Body */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5">
                 {/* Security alert banner inside chat */}
-                <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 flex items-center justify-center gap-2">
+                <div className="p-3 rounded-2xl bg-[#FF4D7E]/10 border border-[#FF4D7E]/20 text-center text-xs text-[#FF4D7E] flex items-center justify-center gap-2">
                   <ShieldAlert className="w-4 h-4 shrink-0" />
                   <span>
                     শালীন ও ইসলামিক শিষ্টাচার বজায় রেখে আলোচনা করুন।
@@ -351,7 +344,7 @@ function InboxContent() {
                 </div>
 
                 {loadingMessages ? (
-                  <div className="py-8 text-center text-xs text-slate-500">মেসেজ লোড হচ্ছে...</div>
+                  <div className="py-8 text-center text-xs text-[#8B7FA8]">মেসেজ লোড হচ্ছে...</div>
                 ) : messages.length > 0 ? (
                   messages.map((m) => {
                     const isMe = m.from === user.id;
@@ -363,13 +356,13 @@ function InboxContent() {
                         <div
                           className={`max-w-[80%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                             isMe
-                              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-medium rounded-br-none shadow-md'
-                              : 'bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700 shadow-sm'
+                              ? 'bg-gradient-to-r from-[#FF4D7E] to-[#E63465] text-white font-medium rounded-br-none shadow-md'
+                              : 'bg-[#1F1640] text-[#F5F3FA] rounded-bl-none border border-white/10 shadow-sm'
                           }`}
                         >
                           <p>{m.text}</p>
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-1 px-1 flex items-center gap-1">
+                        <span className="text-[10px] text-[#8B7FA8] mt-1 px-1 flex items-center gap-1">
                           <span>{timeAgo(m.at)}</span>
                           {isMe && <CheckCheck className="w-3 h-3 text-sky-400 inline" />}
                         </span>
@@ -377,7 +370,7 @@ function InboxContent() {
                     );
                   })
                 ) : (
-                  <div className="py-16 text-center text-xs text-slate-500">
+                  <div className="py-16 text-center text-xs text-[#8B7FA8]">
                     এখনও কোনো বার্তা আদান-প্রদান করা হয়নি। সালাম দিয়ে আলোচনা শুরু করুন।
                   </div>
                 )}
@@ -387,19 +380,19 @@ function InboxContent() {
               {/* Chat Input Field Form */}
               <form
                 onSubmit={handleSendMessage}
-                className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950 flex items-center gap-2"
+                className="p-3 sm:p-4 border-t border-white/10 bg-[#150E2B] flex items-center gap-2"
               >
                 <input
                   type="text"
                   placeholder="মেসেজ লিখুন..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-slate-100 text-xs sm:text-sm focus:outline-none focus:border-amber-400 placeholder:text-slate-500"
+                  className="flex-1 px-4 py-3 rounded-2xl bg-[#1F1640] border border-white/10 text-[#F5F3FA] text-xs sm:text-sm focus:outline-none focus:border-[#FF4D7E] placeholder:text-[#8B7FA8]"
                 />
                 <button
                   type="submit"
                   disabled={!messageText.trim() || sending}
-                  className="p-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 disabled:opacity-40 transition-all cursor-pointer"
+                  className="p-3 rounded-2xl bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-md shadow-[#FF4D7E]/20 disabled:opacity-40 transition-all cursor-pointer"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -407,11 +400,11 @@ function InboxContent() {
             </>
           ) : (
             <div className="p-8 text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-amber-400 mx-auto text-2xl">
+              <div className="w-16 h-16 rounded-full bg-[#1F1640] flex items-center justify-center text-[#FF4D7E] mx-auto text-2xl border border-white/10">
                 💬
               </div>
-              <h3 className="text-base font-bold text-slate-200">কথোপকথন নির্বাচন করুন</h3>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              <h3 className="text-base font-bold text-[#F5F3FA]">কথোপকথন নির্বাচন করুন</h3>
+              <p className="text-xs text-[#B9AFD1] max-w-xs mx-auto">
                 বাম পাশের তালিকা থেকে যেকোনো পাত্র বা পাত্রীর প্রোফাইল বেছে নিয়ে চ্যাটিং শুরু করুন।
               </p>
             </div>

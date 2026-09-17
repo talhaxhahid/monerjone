@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'লগইন করুন' }, { status: 401 });
     }
 
-    const { targetId } = await request.json();
+    const body = await request.json();
+    const targetId = body.targetId || body.targetUserId;
     if (!targetId || targetId === me.id) {
       return NextResponse.json({ error: 'সঠিক টার্গেট আইডি দিন' }, { status: 400 });
     }

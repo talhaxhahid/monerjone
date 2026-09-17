@@ -35,11 +35,10 @@ export async function POST(req: NextRequest) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    const { userId, planName, phoneQuota } = session.metadata || {};
+    const { userId, planName } = session.metadata || {};
 
     if (userId && planName) {
       const tier: PlanTierType = planName === 'Platinum' ? 'Platinum' : 'Gold';
-      const additionalQuota = Number(phoneQuota) || (tier === 'Platinum' ? 10 : 3);
       const amountTotal = session.amount_total ? Math.round(session.amount_total / 100) : (tier === 'Platinum' ? 2499 : 1350);
 
       try {
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
           data: {
             premium: tier,
             premiumActivatedAt: new Date(),
-            phoneQuota: { increment: additionalQuota },
           },
         });
 

@@ -3,10 +3,20 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Heart, MessageCircle, MapPin, Briefcase, GraduationCap, Sparkles, CheckCircle2 } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Sparkles,
+  CheckCircle2,
+  Crown
+} from 'lucide-react';
 import { ProfileCardData } from '@/types';
 import { bn, cmToFeetInches } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export default function ProfileCard({
   profile,
@@ -23,7 +33,6 @@ export default function ProfileCard({
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (!user) {
       router.push('/login');
       return;
@@ -39,14 +48,18 @@ export default function ProfileCard({
       const data = await res.json();
       if (res.ok) {
         setIsFav(data.favorited);
-        if (onFavoriteToggle) onFavoriteToggle(profile.id, data.favorited);
+        if (onFavoriteToggle) {
+          onFavoriteToggle(profile.id, data.favorited);
+        }
         addToast(
-          data.favorited ? 'পছন্দের তালিকায় যুক্ত করা হয়েছে' : 'পছন্দের তালিকা থেকে সরানো হয়েছে',
+          data.favorited ? 'পছন্দের তালিকায় যুক্ত হয়েছে' : 'পছন্দের তালিকা থেকে বাদ দেওয়া হয়েছে',
           'success'
         );
+      } else {
+        addToast(data.message || 'ব্যর্থ হয়েছে', 'error');
       }
     } catch {
-      addToast('পছন্দ আপডেট করতে সমস্যা হয়েছে', 'error');
+      addToast('একটি সমস্যা হয়েছে', 'error');
     } finally {
       setLoadingFav(false);
     }
@@ -59,52 +72,67 @@ export default function ProfileCard({
     }
   };
 
-  const hasPhoto = profile.photos && profile.photos.length > 0;
+  const photoUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0] : null;
   const heightText = profile.heightCm ? cmToFeetInches(profile.heightCm) : null;
+  const isPlatinum = profile.premium === 'Platinum';
+  const isGold = profile.premium === 'Gold';
+  const isPremium = isPlatinum || isGold;
 
   return (
-    <div className="group relative rounded-3xl bg-[#1F1640] border border-white/10 overflow-hidden shadow-xl hover:shadow-2xl hover:border-[#FF4D7E]/40 hover:bg-[#291D54] hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between">
-      
+    <div
+      className={`group relative rounded-3xl bg-[#1F1640] overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between ${
+        isPlatinum
+          ? 'border border-indigo-400/35 hover:border-indigo-400/70 hover:shadow-indigo-950/40'
+          : isGold
+          ? 'border border-[#F5B942]/35 hover:border-[#F5B942]/70 hover:shadow-amber-950/40'
+          : 'border border-white/10 hover:border-[#FF4D7E]/40 hover:bg-[#291D54]'
+      }`}
+    >
       {/* Top Image / Avatar container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#150E2B] flex items-center justify-center">
-        {hasPhoto ? (
-          <img
-            src={profile.photos[0]}
-            alt={profile.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1F1640] to-[#150E2B] text-[#8B7FA8] p-4">
-            <div className="w-20 h-20 rounded-full bg-[#331A5C] border border-[#FF4D7E]/20 flex items-center justify-center text-3xl font-bold text-[#F5B942] mb-2">
-              {profile.firstName ? profile.firstName[0].toUpperCase() : 'U'}
-            </div>
-            <span className="text-xs text-[#B9AFD1] font-medium">ছবি যুক্ত করা হয়নি</span>
-          </div>
-        )}
+        <ImageWithFallback
+          src={photoUrl}
+          alt={profile.name}
+          gender={profile.gender}
+          name={profile.name}
+          fallbackType="avatar"
+          showFallbackLabel={true}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+        />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#1F1640] via-transparent to-black/30 pointer-events-none" />
 
-        {/* Match Score Badge */}
-        {profile.matchScore && (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#150E2B]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
+        {/* 1. TOP-LEFT: Premium Tier Badge OR Match Score Badge */}
+        {isPlatinum ? (
+          <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-indigo-100 via-white to-indigo-200 text-indigo-950 border border-white/80 shadow-lg shadow-indigo-950/40 flex items-center gap-1.5 shimmer-badge">
+            <Crown className="w-3.5 h-3.5 text-indigo-700 shrink-0" />
+            <span>প্লাটিনাম মেম্বার</span>
+          </div>
+        ) : isGold ? (
+          <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-[#FFFBEB] via-[#F5B942] to-[#E5A934] text-[#291704] border border-[#FEF3C7]/80 shadow-lg shadow-amber-950/40 flex items-center gap-1.5 shimmer-badge">
+            <Crown className="w-3.5 h-3.5 text-[#291704] shrink-0" />
+            <span>গোল্ড মেম্বার</span>
+          </div>
+        ) : profile.matchScore ? (
+          <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#150E2B]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
+            <Sparkles className="w-3 h-3 text-emerald-400" />
+            <span>{profile.matchScore}% ম্যাচ</span>
+          </div>
+        ) : null}
+
+        {/* 2. BOTTOM-LEFT: Match Score Badge (When user is Premium) */}
+        {isPremium && profile.matchScore && (
+          <div className="absolute bottom-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#150E2B]/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
             <Sparkles className="w-3 h-3 text-emerald-400" />
             <span>{profile.matchScore}% ম্যাচ</span>
           </div>
         )}
 
-        {/* Premium Badge */}
-        {profile.premium !== 'Free' && (
-          <div className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F5B942] text-[#150E2B] shadow-md flex items-center gap-1 shimmer-badge">
-            <span>👑</span>
-            <span>{bn(profile.premium)}</span>
-          </div>
-        )}
-
-        {/* Online dot indicator */}
+        {/* 3. TOP-RIGHT: Online Status & Favorite Button */}
         {profile.active && (
-          <div className="absolute top-3.5 right-12 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#150E2B]/80 border border-emerald-500/30 text-[10px] text-emerald-400">
+          <div className="absolute top-3.5 right-12 z-10 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#150E2B]/85 border border-emerald-500/30 text-[10px] text-emerald-400 backdrop-blur-md shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             <span>সক্রিয়</span>
           </div>
@@ -114,7 +142,7 @@ export default function ProfileCard({
         <button
           onClick={handleToggleFavorite}
           disabled={loadingFav}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all duration-200 ${
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md transition-all duration-200 cursor-pointer ${
             isFav
               ? 'bg-[#FF4D7E] text-white shadow-lg shadow-[#FF4D7E]/40 scale-110'
               : 'bg-[#150E2B]/70 text-[#F5F3FA] hover:text-[#FF4D7E] hover:bg-[#150E2B] border border-white/10'
@@ -128,15 +156,15 @@ export default function ProfileCard({
       {/* Card Content Body */}
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
-          {/* Name & Age */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[#F5F3FA] group-hover:text-[#FF4D7E] transition-colors flex items-center gap-1.5">
-              <span>{profile.name}</span>
+          {/* Name & Age Header */}
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base sm:text-lg font-bold text-[#F5F3FA] group-hover:text-[#FF4D7E] transition-colors flex items-center gap-1.5 truncate">
+              <span className="truncate">{profile.name}</span>
               {profile.profileComplete && (
-                <CheckCircle2 className="w-4 h-4 text-[#FF4D7E] inline" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF4D7E] shrink-0" />
               )}
             </h3>
-            <span className="text-sm font-semibold text-[#F5B942] bg-[#F5B942]/10 px-2 py-0.5 rounded-lg border border-[#F5B942]/20">
+            <span className="text-xs sm:text-sm font-semibold text-[#F5B942] bg-[#F5B942]/10 px-2 py-0.5 rounded-lg border border-[#F5B942]/20 shrink-0">
               {profile.age} বছর
             </span>
           </div>

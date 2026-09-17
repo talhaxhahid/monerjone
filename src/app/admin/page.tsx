@@ -9,10 +9,8 @@ import {
   CreditCard,
   CheckCircle2,
   XCircle,
-  Crown,
-  Search,
   RefreshCw,
-  Sparkles
+  Search
 } from 'lucide-react';
 import { bn, timeAgo } from '@/lib/utils';
 
@@ -104,7 +102,7 @@ export default function AdminDashboardPage() {
   if (authLoading || !user || user.role !== 'ADMIN') {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#FF4D7E] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -113,20 +111,20 @@ export default function AdminDashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-white/10 gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 text-xs font-bold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF4D7E]/10 text-[#FF4D7E] text-xs font-bold mb-2">
             <ShieldAlert className="w-3.5 h-3.5" />
             <span>MonerJone সুপার এডমিন কন্ট্রোল</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif">
             এডমিন ড্যাশবোর্ড ও ব্যবস্থাপনা
           </h1>
         </div>
 
         <button
           onClick={loadAdminData}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-xs font-semibold text-slate-200 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1F1640] border border-white/10 hover:border-[#FF4D7E] text-xs font-semibold text-[#F5F3FA] transition-all cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>রিফ্রেশ করুন</span>
@@ -136,39 +134,39 @@ export default function AdminDashboardPage() {
       {/* Analytics Counter Grid */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 block">মোট ইউজার</span>
-            <span className="text-2xl font-bold text-slate-100 font-serif mt-1 block">
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
+            <span className="text-xs text-[#8B7FA8] block">মোট ইউজার</span>
+            <span className="text-2xl font-bold text-[#F5F3FA] font-serif mt-1 block">
               {stats.totalUsers}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 block">মোট পাত্র (বর)</span>
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
+            <span className="text-xs text-[#8B7FA8] block">মোট পাত্র (বর)</span>
             <span className="text-2xl font-bold text-sky-400 font-serif mt-1 block">
               {stats.totalGrooms}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 block">মোট পাত্রী (কনে)</span>
-            <span className="text-2xl font-bold text-pink-400 font-serif mt-1 block">
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
+            <span className="text-xs text-[#8B7FA8] block">মোট পাত্রী (কনে)</span>
+            <span className="text-2xl font-bold text-[#FF4D7E] font-serif mt-1 block">
               {stats.totalBrides}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 block">গোল্ড মেম্বার</span>
-            <span className="text-2xl font-bold text-amber-400 font-serif mt-1 block">
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
+            <span className="text-xs text-[#8B7FA8] block">গোল্ড মেম্বার</span>
+            <span className="text-2xl font-bold text-[#F5B942] font-serif mt-1 block">
               {stats.totalGold}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-            <span className="text-xs text-slate-400 block">প্লাটিনাম মেম্বার</span>
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
+            <span className="text-xs text-[#8B7FA8] block">প্লাটিনাম মেম্বার</span>
             <span className="text-2xl font-bold text-purple-400 font-serif mt-1 block">
               {stats.totalPlatinum}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-pink-500/30 text-center">
-            <span className="text-xs text-pink-400 font-semibold block">পেন্ডিং পেমেন্ট</span>
-            <span className="text-2xl font-bold text-pink-300 font-serif mt-1 block">
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-[#FF4D7E]/30 text-center">
+            <span className="text-xs text-[#FF4D7E] font-semibold block">পেন্ডিং পেমেন্ট</span>
+            <span className="text-2xl font-bold text-[#FF4D7E] font-serif mt-1 block">
               {stats.pendingPayments}
             </span>
           </div>
@@ -176,13 +174,13 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-3 border-b border-slate-800 pb-3">
+      <div className="flex gap-3 border-b border-white/10 pb-3">
         <button
           onClick={() => setActiveTab('payments')}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'payments'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/20'
+              : 'bg-[#1F1640] text-[#B9AFD1] hover:text-white'
           }`}
         >
           <CreditCard className="w-4 h-4" />
@@ -190,10 +188,10 @@ export default function AdminDashboardPage() {
         </button>
         <button
           onClick={() => setActiveTab('users')}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'users'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200'
+              ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/20'
+              : 'bg-[#1F1640] text-[#B9AFD1] hover:text-white'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -205,9 +203,9 @@ export default function AdminDashboardPage() {
       {activeTab === 'payments' && (
         <div className="space-y-4">
           {payments.length > 0 ? (
-            <div className="overflow-x-auto rounded-3xl bg-slate-900/90 border border-amber-500/20 shadow-xl">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950/80 text-[11px] font-bold text-amber-400 uppercase tracking-wider border-b border-slate-800">
+            <div className="overflow-x-auto rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl">
+              <table className="w-full text-left text-xs text-[#B9AFD1]">
+                <thead className="bg-[#150E2B] text-[11px] font-bold text-[#FF4D7E] uppercase tracking-wider border-b border-white/10">
                   <tr>
                     <th className="p-4">তারিখ</th>
                     <th className="p-4">গ্রাহক</th>
@@ -219,24 +217,24 @@ export default function AdminDashboardPage() {
                     <th className="p-4 text-right">অ্যাকশন</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-white/10">
                   {payments.map((pay) => (
-                    <tr key={pay.id} className="hover:bg-slate-800/40">
-                      <td className="p-4 text-slate-400">{timeAgo(pay.createdAt)}</td>
+                    <tr key={pay.id} className="hover:bg-[#291D54]/40 transition-colors">
+                      <td className="p-4 text-[#8B7FA8]">{timeAgo(pay.createdAt)}</td>
                       <td className="p-4">
-                        <span className="font-bold text-slate-100 block">
+                        <span className="font-bold text-[#F5F3FA] block">
                           {pay.user?.firstName} {pay.user?.lastName}
                         </span>
-                        <span className="text-[11px] text-slate-400">{pay.user?.phone}</span>
+                        <span className="text-[11px] text-[#8B7FA8]">{pay.user?.phone}</span>
                       </td>
                       <td className="p-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FF4D7E]/10 text-[#FF4D7E] border border-[#FF4D7E]/30">
                           {bn(pay.plan)}
                         </span>
                       </td>
-                      <td className="p-4 font-bold text-slate-100">৳ {pay.amount}</td>
+                      <td className="p-4 font-bold text-[#F5F3FA]">৳ {pay.amount}</td>
                       <td className="p-4 font-mono font-bold text-pink-300">{pay.bKashNumber}</td>
-                      <td className="p-4 font-mono font-bold text-amber-300 select-all tracking-wider">
+                      <td className="p-4 font-mono font-bold text-[#F5B942] select-all tracking-wider">
                         {pay.trxId}
                       </td>
                       <td className="p-4">
@@ -246,7 +244,7 @@ export default function AdminDashboardPage() {
                               ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
                               : pay.status === 'REJECTED'
                               ? 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-                              : 'bg-amber-500/10 text-amber-300 border border-amber-500/30 animate-pulse'
+                              : 'bg-[#F5B942]/10 text-[#F5B942] border border-[#F5B942]/30 animate-pulse'
                           }`}
                         >
                           {bn(pay.status)}
@@ -257,21 +255,21 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handlePaymentAction(pay.id, 'APPROVE')}
-                              className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 transition-colors"
+                              className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 transition-colors cursor-pointer"
                               title="অনুমোদন করুন"
                             >
                               <CheckCircle2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handlePaymentAction(pay.id, 'REJECT')}
-                              className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-slate-950 transition-colors"
+                              className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-slate-950 transition-colors cursor-pointer"
                               title="বাতিল করুন"
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-500">প্রক্রিয়াকৃত</span>
+                          <span className="text-[11px] text-[#8B7FA8]">প্রক্রিয়াকৃত</span>
                         )}
                       </td>
                     </tr>
@@ -280,7 +278,7 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           ) : (
-            <div className="p-12 text-center text-xs text-slate-500 bg-slate-900/40 rounded-3xl border border-slate-800">
+            <div className="p-12 text-center text-xs text-[#8B7FA8] bg-[#1F1640]/40 rounded-3xl border border-white/10">
               কোনো পেমেন্ট রিকোয়েস্ট জমা নেই।
             </div>
           )}
@@ -292,20 +290,20 @@ export default function AdminDashboardPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-[#8B7FA8] absolute left-3 top-3" />
               <input
                 type="text"
                 placeholder="নাম, ফোন নম্বর বা জেলা দিয়ে খুঁজুন..."
                 value={searchUser}
                 onChange={(e) => setSearchUser(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:border-amber-400"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:border-[#FF4D7E] outline-none placeholder:text-[#8B7FA8]"
               />
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl bg-slate-900/90 border border-amber-500/20 shadow-xl">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-[11px] font-bold text-amber-400 uppercase tracking-wider border-b border-slate-800">
+          <div className="overflow-x-auto rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl">
+            <table className="w-full text-left text-xs text-[#B9AFD1]">
+              <thead className="bg-[#150E2B] text-[11px] font-bold text-[#FF4D7E] uppercase tracking-wider border-b border-white/10">
                 <tr>
                   <th className="p-4">নাম ও ফোন</th>
                   <th className="p-4">লিঙ্গ ও বয়স</th>
@@ -316,19 +314,19 @@ export default function AdminDashboardPage() {
                   <th className="p-4 text-right">প্যাকেজ পরিবর্তন</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-white/10">
                 {usersList.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/40">
+                  <tr key={u.id} className="hover:bg-[#291D54]/40 transition-colors">
                     <td className="p-4">
-                      <span className="font-bold text-slate-100 block">{u.name}</span>
-                      <span className="text-[11px] text-slate-400 font-mono">{u.phone}</span>
+                      <span className="font-bold text-[#F5F3FA] block">{u.name}</span>
+                      <span className="text-[11px] text-[#8B7FA8] font-mono">{u.phone}</span>
                     </td>
                     <td className="p-4">
                       <span>{bn(u.gender)}, {u.age} বছর</span>
                     </td>
                     <td className="p-4">{u.district || 'অনির্দিষ্ট'}</td>
                     <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FF4D7E]/10 text-[#FF4D7E] border border-[#FF4D7E]/30">
                         {bn(u.premium)}
                       </span>
                     </td>
@@ -336,7 +334,7 @@ export default function AdminDashboardPage() {
                       {u.profileComplete ? (
                         <span className="text-emerald-400">✓ সম্পূর্ণ</span>
                       ) : (
-                        <span className="text-slate-500">অসম্পূর্ণ</span>
+                        <span className="text-[#8B7FA8]">অসম্পূর্ণ</span>
                       )}
                     </td>
                     <td className="p-4">{u.photoCount} টি ছবি</td>
@@ -344,7 +342,7 @@ export default function AdminDashboardPage() {
                       <select
                         value={u.premium}
                         onChange={(e) => handleUserPlanUpdate(u.id, e.target.value)}
-                        className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-amber-400 font-bold focus:border-amber-400 cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg bg-[#150E2B] border border-white/10 text-[11px] text-[#FF4D7E] font-bold focus:border-[#FF4D7E] cursor-pointer outline-none"
                       >
                         <option value="Free">ফ্রি (Free)</option>
                         <option value="Gold">গোল্ড (Gold)</option>

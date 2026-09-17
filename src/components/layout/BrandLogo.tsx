@@ -26,7 +26,7 @@ export default function BrandLogo({
     <div className={`flex items-center gap-3 group ${className}`}>
       {/* Exact Brand Emblem SVG from MonerJone */}
       <div
-        className={`${iconSizes[size]} rounded-full overflow-hidden shrink-0 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300 border border-amber-500/40`}
+        className={`${iconSizes[size]} rounded-full overflow-hidden shrink-0 shadow-lg shadow-[#FF4D7E]/20 group-hover:scale-105 transition-transform duration-300 border border-[#FF4D7E]/30`}
       >
         <svg
           viewBox="0 0 200 200"
@@ -34,7 +34,7 @@ export default function BrandLogo({
           xmlns="http://www.w3.org/2000/svg"
         >
           <ellipse cx="100" cy="112" rx="86" ry="80" fill="#3A2B54" />
-          <g fill="#D4AF37" opacity="0.85">
+          <g fill="#F5B942" opacity="0.85">
             <g transform="translate(28,55)">
               <path d="M0,-6 L1.5,-1.5 6,0 1.5,1.5 0,6 -1.5,1.5 -6,0 -1.5,-1.5Z" />
             </g>
@@ -53,9 +53,9 @@ export default function BrandLogo({
               fill="#F5F0E6"
             />
             <path d="M65,100 L65,185" stroke="#D8CDB4" strokeWidth="1.6" />
-            <circle cx="65" cy="118" r="1.8" fill="#D4AF37" />
-            <circle cx="65" cy="132" r="1.8" fill="#D4AF37" />
-            <circle cx="65" cy="146" r="1.8" fill="#D4AF37" />
+            <circle cx="65" cy="118" r="1.8" fill="#F5B942" />
+            <circle cx="65" cy="132" r="1.8" fill="#F5B942" />
+            <circle cx="65" cy="146" r="1.8" fill="#F5B942" />
             <path
               d="M46,122 C40,132 36,145 40,158 L52,155 C49,144 50,133 54,124Z"
               fill="#F5F0E6"
@@ -73,7 +73,7 @@ export default function BrandLogo({
             />
             <path
               d="M48,64 C48,52 55,44 65,44 C75,44 82,52 82,64 C82,66 80,67 78,66 C74,60 70,58 65,58 C60,58 56,60 52,66 C50,67 48,66 48,64Z"
-              fill="#D4AF37"
+              fill="#F5B942"
             />
             <path
               d="M65,44 L65,58 M55,48 L58,60 M75,48 L72,60"
@@ -120,11 +120,11 @@ export default function BrandLogo({
             <path
               d="M133,180 C137,166 137,151 133,138 C129,124 121,111 113,104"
               fill="none"
-              stroke="#D4AF37"
+              stroke="#F5B942"
               strokeWidth="2"
             />
             {/* hem border */}
-            <path d="M106,182 L160,182" stroke="#D4AF37" strokeWidth="3" />
+            <path d="M106,182 L160,182" stroke="#F5B942" strokeWidth="3" />
             {/* arms */}
             <path
               d="M113,124 C107,134 104,146 108,158 L120,155 C117,145 118,134 121,126Z"
@@ -138,7 +138,7 @@ export default function BrandLogo({
             {/* necklace */}
             <path
               d="M124,98 Q133,106 142,98"
-              stroke="#D4AF37"
+              stroke="#F5B942"
               strokeWidth="3"
               fill="none"
               strokeLinecap="round"
@@ -156,7 +156,7 @@ export default function BrandLogo({
             <path
               d="M119,99 C121,76 126,62 133,60 C140,62 145,76 147,99"
               fill="none"
-              stroke="#D4AF37"
+              stroke="#F5B942"
               strokeWidth="1.6"
             />
             {/* head */}
@@ -167,10 +167,10 @@ export default function BrandLogo({
 
       <div className="flex flex-col">
         <div className={`font-bold tracking-tight font-serif flex items-center ${textSizes[size]}`}>
-          <span className="text-slate-100">Moner</span>
-          <span className="text-amber-400">Jone</span>
+          <span className="text-[#F5F3FA]">Moner</span>
+          <span className="text-[#FF4D7E] ml-1">Jone</span>
         </div>
-        <span className="text-[9px] text-amber-400/80 tracking-widest uppercase -mt-0.5 font-medium font-sans">
+        <span className="text-[9px] text-[#B9AFD1] tracking-widest uppercase -mt-0.5 font-medium font-sans">
           Muslim Matrimony
         </span>
       </div>
