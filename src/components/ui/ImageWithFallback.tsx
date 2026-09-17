@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon, Camera, UserRound } from 'lucide-react';
 
 export interface ImageWithFallbackProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
@@ -27,27 +27,23 @@ export default function ImageWithFallback({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsLoading(true);
     setHasError(false);
   }, [src]);
 
   const hasValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '' && !hasError);
-
-  // Extract initial
   const initial = (name || alt || 'U').trim().charAt(0).toUpperCase();
   const isFemale = gender?.toLowerCase() === 'female' || gender === 'পাত্রী';
 
-
   return (
     <div className={`relative overflow-hidden w-full h-full flex items-center justify-center ${containerClassName}`}>
-      {/* 1. Loading Shimmer Skeleton */}
+      {/* 1. Shimmer Loading State */}
       {hasValidSrc && isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1F1640] skeleton-shimmer overflow-hidden">
-          {/* Pulse skeleton placeholder icon */}
+        <div key="loading-skeleton" className="absolute inset-0 z-10 flex items-center justify-center bg-[#1F1640] skeleton-shimmer overflow-hidden pointer-events-none">
           <div className="flex flex-col items-center justify-center gap-2 text-[#8B7FA8]/60 relative z-10">
             <div className="w-10 h-10 rounded-full bg-[#331A5C] animate-pulse flex items-center justify-center border border-white/5 shadow-inner">
-              <Camera className="w-5 h-5 text-[#8B7FA8]/70 animate-pulse" />
+              <Camera className="w-5 h-5 text-[#8B7FA8]/70" />
             </div>
             {showFallbackLabel && (
               <div className="w-16 h-2 rounded-full bg-[#331A5C] animate-pulse" />
@@ -56,10 +52,11 @@ export default function ImageWithFallback({
         </div>
       )}
 
-      {/* 2. Main Image */}
+      {/* 2. Actual Image with Stable Key */}
       {hasValidSrc ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
+          key={`img-${src}`}
           src={src!}
           alt={alt}
           className={`${className} transition-opacity duration-300 ${
@@ -73,8 +70,8 @@ export default function ImageWithFallback({
           {...props}
         />
       ) : (
-        /* 3. Fallback View */
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1F1640] via-[#1A1235] to-[#150E2B] text-[#8B7FA8] p-3 select-none">
+        /* 3. Fallback View with Stable Keys */
+        <div key="fallback-view" className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1F1640] via-[#1A1235] to-[#150E2B] text-[#8B7FA8] p-3 select-none">
           {fallbackType === 'thumbnail' ? (
             <div className="flex flex-col items-center justify-center">
               <ImageIcon className="w-5 h-5 text-[#8B7FA8]/60" />
@@ -87,7 +84,6 @@ export default function ImageWithFallback({
               <span className="text-xs text-[#B9AFD1] font-medium">ছবি পাওয়া যায়নি</span>
             </div>
           ) : (
-            /* Avatar Fallback */
             <div className="flex flex-col items-center justify-center text-center w-full h-full">
               <div
                 className={`relative rounded-full flex items-center justify-center shadow-lg border transition-transform ${
@@ -98,7 +94,6 @@ export default function ImageWithFallback({
                   showFallbackLabel ? 'w-20 h-20 mb-2.5 text-2xl font-bold' : 'w-full h-full text-lg font-bold'
                 }`}
               >
-                {/* SVG Silhouette Silhouette Base */}
                 <div className="flex flex-col items-center justify-center">
                   <UserRound className={showFallbackLabel ? 'w-9 h-9' : 'w-1/2 h-1/2'} />
                   {showFallbackLabel && (
