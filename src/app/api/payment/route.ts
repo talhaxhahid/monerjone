@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+
+const PLAN_PRICES: Record<string, number> = {
+  Gold: 1350,
+  Platinum: 2499,
+};
+
+export async function GET() {
+  try {
+    const me = await getCurrentUser();
+    if (!me) {
+      return NextResponse.json({ error: 'লগইন করুন' }, { status: 401 });
+    }
+
+    const requests = await prisma.paymentRequest.findMany({
+      where: { userId: me.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ payments: requests });
+  } catch (error: any) {
+    console.error('Error in GET /api/payment:', error);
+    return NextResponse.json({ error: error.message || 'সার্ভার ত্রুটি' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const me = await getCurrentUser();
+    if (!me) {
+      return NextResponse.json({ error: 'লগইন করুন' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { plan, bKashNumber, trxId } = body;
+
+    if (!plan || (plan !== 'Gold' && plan !== 'Platinum')) {
+      return NextResponse.json({ error: 'সঠিক প্ল্যান নির্বাচন করুন (Gold বা Platinum)' }, { status: 400 });
+    }
+    if (!bKashNumber || bKashNumber.length < 11) {
+      return NextResponse.json({ error: 'বিকাশ নম্বর সঠিকভাবে দিন' }, { status: 400 });
+    }
+    if (!trxId || trxId.length < 6) {
+      return NextResponse.json({ error: 'বিকাশ TrxID সঠিকভাবে দিন' }, { status: 400 });
+    }
+
+    const amount = PLAN_PRICES[plan] || 1350;
+
+    const payment = await prisma.paymentRequest.create({
+      data: {
+        userId: me.id,
+        plan,
+        amount,
+        bKashNumber,
+        trxId: trxId.toUpperCase().trim(),
+        status: 'PENDING',
+      },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      message: 'আপনার বিকাশ পেমেন্ট তথ্য সফলভাবে জমা দেওয়া হয়েছে। এডমিন ভেরিফাই করে দ্রুত আপগ্রেড সম্পন্ন করবেন।',
+      payment,
+    });
+  } catch (error: any) {
+    console.error('Error in POST /api/payment:', error);
+    return NextResponse.json({ error: error.message || 'সার্ভার ত্রুটি' }, { status: 500 });
+  }
+}

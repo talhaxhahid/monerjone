@@ -1,0 +1,800 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { BD_DISTRICTS } from '@/lib/utils';
+import { compressImageToWebP } from '@/lib/image-compressor';
+import {
+  User,
+  GraduationCap,
+  Sparkles,
+  Camera,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Save,
+  Trash2,
+  Plus,
+  AlertCircle
+} from 'lucide-react';
+
+export default function ProfileEditWizardPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, addToast } = useAuth();
+
+  const [step, setStep] = useState<number>(1);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  // Form State
+  const [formData, setFormData] = useState<any>({
+    heightCm: '',
+    weightKg: '',
+    district: '',
+    maritalStatus: '',
+    religion: 'Islam',
+    children: 'No children',
+    education: '',
+    subject: '',
+    occupation: '',
+    income: '',
+    familyStatus: 'Middle class',
+    fatherOccupation: '',
+    motherOccupation: '',
+    brothers: 0,
+    sisters: 0,
+    languages: 'Bangla, English',
+    prayerFrequency: '5 times a day',
+    hijabNiqab: 'Wears Hijab',
+    smoking: 'No',
+    hobbies: [] as string[],
+    favoriteBooks: '',
+    favoriteFood: '',
+    introduction: '',
+    longBio: '',
+    lookingFor: '',
+    prefAgeMin: 18,
+    prefAgeMax: 35,
+    prefHeight: '',
+    prefEducation: '',
+    prefDistrict: '',
+    workPreference: '',
+    photos: [] as string[],
+  });
+
+  const [hobbyInput, setHobbyInput] = useState('');
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    async function loadCurrentProfile() {
+      try {
+        const res = await fetch('/api/profiles/me');
+        if (res.ok) {
+          const data = await res.json();
+          const p = data.profile;
+          if (p) {
+            setFormData({
+              heightCm: p.heightCm || '',
+              weightKg: p.weightKg || '',
+              district: p.district || '',
+              maritalStatus: p.maritalStatus || 'Never Married',
+              religion: p.religion || 'Islam',
+              children: p.children || 'No children',
+              education: p.education || '',
+              subject: p.subject || '',
+              occupation: p.occupation || '',
+              income: p.income || '',
+              familyStatus: p.familyStatus || 'Middle class',
+              fatherOccupation: p.fatherOccupation || '',
+              motherOccupation: p.motherOccupation || '',
+              brothers: p.brothers || 0,
+              sisters: p.sisters || 0,
+              languages: p.languages || 'Bangla, English',
+              prayerFrequency: p.prayerFrequency || '5 times a day',
+              hijabNiqab: p.hijabNiqab || 'Wears Hijab',
+              smoking: p.smoking || 'No',
+              hobbies: p.hobbies || [],
+              favoriteBooks: p.favoriteBooks || '',
+              favoriteFood: p.favoriteFood || '',
+              introduction: p.introduction || '',
+              longBio: p.longBio || '',
+              lookingFor: p.lookingFor || '',
+              prefAgeMin: p.prefAgeMin || 18,
+              prefAgeMax: p.prefAgeMax || 35,
+              prefHeight: p.prefHeight || '',
+              prefEducation: p.prefEducation || '',
+              prefDistrict: p.prefDistrict || '',
+              workPreference: p.workPreference || '',
+              photos: p.rawPhotos || [],
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    if (user) {
+      loadCurrentProfile();
+    }
+  }, [user]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (formData.photos.length >= 5) {
+      addToast('সর্বোচ্চ ৫টি ছবি আপলোড করা যাবে', 'error');
+      return;
+    }
+
+    addToast('ছবি অপ্টিমাইজ ও কম্প্রেস করা হচ্ছে...', 'info');
+
+    const newPhotos: string[] = [...formData.photos];
+    for (let i = 0; i < files.length; i++) {
+      if (newPhotos.length >= 5) break;
+      try {
+        const compressedWebP = await compressImageToWebP(files[i], 1200, 1200, 0.82);
+        newPhotos.push(compressedWebP);
+      } catch (err) {
+        console.error('Photo compression error:', err);
+      }
+    }
+
+    setFormData({ ...formData, photos: newPhotos });
+    addToast('ছবি সফলভাবে যুক্ত হয়েছে', 'success');
+  };
+
+  const removePhoto = (index: number) => {
+    const updated = formData.photos.filter((_: any, idx: number) => idx !== index);
+    setFormData({ ...formData, photos: updated });
+  };
+
+  const addHobby = () => {
+    if (!hobbyInput.trim()) return;
+    if (formData.hobbies.includes(hobbyInput.trim())) return;
+    setFormData({
+      ...formData,
+      hobbies: [...formData.hobbies, hobbyInput.trim()],
+    });
+    setHobbyInput('');
+  };
+
+  const removeHobby = (h: string) => {
+    setFormData({
+      ...formData,
+      hobbies: formData.hobbies.filter((item: string) => item !== h),
+    });
+  };
+
+  const handleSave = async (redirectOnSuccess: boolean = false) => {
+    setError('');
+    setSaving(true);
+    try {
+      const res = await fetch('/api/profiles/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        addToast('বায়োডাটা সফলভাবে সংরক্ষণ করা হয়েছে!', 'success');
+        if (redirectOnSuccess && user) {
+          router.push(`/profile/${user.id}`);
+        }
+      } else {
+        setError(data.message || data.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
+      }
+    } catch {
+      setError('সার্ভার ত্রুটি');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      
+      {/* Wizard Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif">
+          বায়োডাটা সম্পাদনা ও প্রোফাইল সেটআপ
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400">
+          সুনির্দিষ্ট তথ্য প্রদান করে আপনার ইসলামিক বায়োডাটা আকর্ষণীয় করে তুলুন
+        </p>
+      </div>
+
+      {/* 4-Step Stepper Bar */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+        {[
+          { num: 1, title: 'শারীরিক ও মৌলিক' },
+          { num: 2, title: 'শিক্ষা ও পেশা' },
+          { num: 3, title: 'দ্বীন ও লাইফস্টাইল' },
+          { num: 4, title: 'পছন্দ ও ছবি' },
+        ].map((s) => (
+          <button
+            key={s.num}
+            onClick={() => setStep(s.num)}
+            className={`p-3 rounded-2xl border text-center transition-all ${
+              step === s.num
+                ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-md shadow-amber-500/10'
+                : step > s.num
+                ? 'bg-slate-900 border-emerald-500/40 text-emerald-400'
+                : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <span className="block text-xs sm:text-sm font-bold">ধাপ {s.num}</span>
+            <span className="hidden sm:block text-[11px] mt-0.5 truncate">{s.title}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-xs font-medium text-rose-200 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Wizard Content Card */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-amber-500/20 shadow-2xl backdrop-blur-xl">
+        
+        {/* ================= STEP 1 ================= */}
+        {step === 1 && (
+          <div className="space-y-5">
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
+              <User className="w-5 h-5 text-amber-400" />
+              <span>ধাপ ১: শারীরিক ও মৌলিক তথ্য</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  উচ্চতা (সেমি বা ফুট-ইঞ্চি)
+                </label>
+                <select
+                  value={formData.heightCm}
+                  onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="">উচ্চতা নির্বাচন করুন</option>
+                  <option value="147">4&apos;10&quot; (147 সেমি)</option>
+                  <option value="150">4&apos;11&quot; (150 সেমি)</option>
+                  <option value="152">5&apos;0&quot; (152 সেমি)</option>
+                  <option value="155">5&apos;1&quot; (155 সেমি)</option>
+                  <option value="157">5&apos;2&quot; (157 সেমি)</option>
+                  <option value="160">5&apos;3&quot; (160 সেমি)</option>
+                  <option value="163">5&apos;4&quot; (163 সেমি)</option>
+                  <option value="165">5&apos;5&quot; (165 সেমি)</option>
+                  <option value="168">5&apos;6&quot; (168 সেমি)</option>
+                  <option value="170">5&apos;7&quot; (170 সেমি)</option>
+                  <option value="173">5&apos;8&quot; (173 সেমি)</option>
+                  <option value="175">5&apos;9&quot; (175 সেমি)</option>
+                  <option value="178">5&apos;10&quot; (178 সেমি)</option>
+                  <option value="180">5&apos;11&quot; (180 সেমি)</option>
+                  <option value="183">6&apos;0&quot; (183 সেমি)</option>
+                  <option value="185">6&apos;1&quot; (185 সেমি)</option>
+                  <option value="188">6&apos;2&quot; (188 সেমি)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  ওজন (কেজি)
+                </label>
+                <input
+                  type="number"
+                  placeholder="যেমন: 65"
+                  value={formData.weightKg}
+                  onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  নিজ জেলা
+                </label>
+                <select
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="">জেলা নির্বাচন করুন</option>
+                  {BD_DISTRICTS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  বৈবাহিক অবস্থা
+                </label>
+                <select
+                  value={formData.maritalStatus}
+                  onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="Never Married">অবিবাহিত</option>
+                  <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
+                  <option value="Divorced">ডিভোর্সড</option>
+                  <option value="Widowed">বিধবা / বিপত্নীক</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  সন্তান বিবরণ
+                </label>
+                <select
+                  value={formData.children}
+                  onChange={(e) => setFormData({ ...formData, children: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="No children">সন্তান নেই</option>
+                  <option value="1 child">১ সন্তান</option>
+                  <option value="2+ children">২+ সন্তান</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  ভাষাসমূহ
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: বাংলা, ইংরেজি, আরবি"
+                  value={formData.languages}
+                  onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= STEP 2 ================= */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
+              <GraduationCap className="w-5 h-5 text-amber-400" />
+              <span>ধাপ ২: শিক্ষা, পেশা ও পারিবারিক বিবরণ</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  শিক্ষাগত যোগ্যতা
+                </label>
+                <select
+                  value={formData.education}
+                  onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="">নির্বাচন করুন</option>
+                  <option value="Honours">অনার্স / স্নাতক</option>
+                  <option value="Masters">মাস্টার্স</option>
+                  <option value="HSC">এইচএসসি</option>
+                  <option value="SSC">এসএসসি</option>
+                  <option value="PhD">পিএইচডি</option>
+                  <option value="Primary">প্রাথমিক</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  বিষয় / বিভাগ
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: CSE, BBA, ইসলামিক স্টাডিজ"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  পেশা / কর্মক্ষেত্র
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: সফটওয়্যার ইঞ্জিনিয়ার, ব্যাংকার, শিক্ষক, ব্যবসায়ী"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  মাসিক আয়
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: ৳ ৫০,০০০ - ৮০,০০০"
+                  value={formData.income}
+                  onChange={(e) => setFormData({ ...formData, income: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  পিতার পেশা
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: সরকারি কর্মকর্তা / ব্যবসায়ী"
+                  value={formData.fatherOccupation}
+                  onChange={(e) => setFormData({ ...formData, fatherOccupation: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  মাতার পেশা
+                </label>
+                <input
+                  type="text"
+                  placeholder="যেমন: গৃহিণী / শিক্ষিকা"
+                  value={formData.motherOccupation}
+                  onChange={(e) => setFormData({ ...formData, motherOccupation: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  ভাইয়ের সংখ্যা
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.brothers}
+                  onChange={(e) => setFormData({ ...formData, brothers: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  বোনের সংখ্যা
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.sisters}
+                  onChange={(e) => setFormData({ ...formData, sisters: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= STEP 3 ================= */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
+              <span className="text-amber-400">🕌</span>
+              <span>ধাপ ৩: ধর্মীয় ও ব্যক্তিগত লাইফস্টাইল</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  নামাজ আদায়
+                </label>
+                <select
+                  value={formData.prayerFrequency}
+                  onChange={(e) => setFormData({ ...formData, prayerFrequency: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="5 times a day">দৈনিক ৫ ওয়াক্ত</option>
+                  <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
+                  <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
+                  <option value="Usually">মাঝে মাঝে</option>
+                </select>
+              </div>
+
+              {user.gender === 'Female' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    হিজাব / পর্দা
+                  </label>
+                  <select
+                    value={formData.hijabNiqab}
+                    onChange={(e) => setFormData({ ...formData, hijabNiqab: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                  >
+                    <option value="Wears Hijab">হিজাব পরেন</option>
+                    <option value="Wears Hijab & Niqab">হিজাব ও নিকাব পরেন</option>
+                    <option value="Does not currently wear Hijab">বর্তমানে হিজাব পরেন না</option>
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  ধূমপান
+                </label>
+                <select
+                  value={formData.smoking}
+                  onChange={(e) => setFormData({ ...formData, smoking: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="No">না (অধূমপায়ী)</option>
+                  <option value="Occasionally">মাঝে মাঝে</option>
+                  <option value="Yes">হ্যাঁ</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  পারিবারিক অবস্থান
+                </label>
+                <select
+                  value={formData.familyStatus}
+                  onChange={(e) => setFormData({ ...formData, familyStatus: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                >
+                  <option value="Middle class">মধ্যবিত্ত</option>
+                  <option value="Upper middle class">উচ্চ মধ্যবিত্ত</option>
+                  <option value="Well-established">উচ্চবিত্ত / প্রতিষ্ঠিত</option>
+                  <option value="Lower class">নিম্নবিত্ত</option>
+                </select>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  শখ ও পছন্দ (Hobbies)
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="যেমন: বই পড়া, ভ্রমণ, কুরআন তিলাওয়াত, রান্না"
+                    value={hobbyInput}
+                    onChange={(e) => setHobbyInput(e.target.value)}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={addHobby}
+                    className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold"
+                  >
+                    যুক্ত করুন
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {formData.hobbies.map((h: string) => (
+                    <span
+                      key={h}
+                      className="px-3 py-1 rounded-full bg-slate-800 text-slate-200 text-xs border border-slate-700 flex items-center gap-1.5"
+                    >
+                      <span>{h}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeHobby(h)}
+                        className="text-slate-400 hover:text-rose-400"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= STEP 4 ================= */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 pb-3 border-b border-slate-800">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              <span>ধাপ ৪: পরিচিতি, জীবনসঙ্গী পছন্দ ও ছবি আপলোড</span>
+            </h2>
+
+            {/* Photo Uploader with WebP Compression */}
+            <div className="p-4 rounded-2xl bg-slate-950/70 border border-amber-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    প্রোফাইল ছবি যুক্ত করুন (সর্বোচ্চ ৫টি)
+                  </span>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    ছবি স্বয়ংক্রিয়ভাবে হাই-কোয়ালিটি WebP ফরম্যাটে কম্প্রেস হবে
+                  </p>
+                </div>
+                <label className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 cursor-pointer hover:bg-amber-400 flex items-center gap-1.5">
+                  <Plus className="w-4 h-4" />
+                  ছবি আপলোড
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {/* Photo Preview Grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2">
+                {formData.photos.map((ph: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="relative aspect-square rounded-xl overflow-hidden border border-amber-500/30 group"
+                  >
+                    <img src={ph} alt="photo" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(idx)}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-rose-900/90 text-rose-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    {idx === 0 && (
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500 text-slate-950">
+                        মূল ছবি
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Introduction & Bio */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  সংক্ষিপ্ত পরিচিতি (এক নজরে আপনার পরিচয়)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="যেমন: আমি ধার্মিক, সৎ ও অমায়িক স্বভাবের একজন মানুষ..."
+                  value={formData.introduction}
+                  onChange={(e) => setFormData({ ...formData, introduction: e.target.value })}
+                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  যেমন জীবনসঙ্গী প্রত্যাশা করেন (সঙ্গীর গুণাবলী)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="যেমন: পাত্রী/পাত্রকে দীনদার, পাঁচ ওয়াক্ত নামাজী ও পারিবারিক মূল্যবোধ সম্পন্ন হতে হবে..."
+                  value={formData.lookingFor}
+                  onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
+                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                />
+              </div>
+
+              {/* Partner Range Preferences */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    প্রত্যাশিত বয়স সীমা ({formData.prefAgeMin} - {formData.prefAgeMax} বছর)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      value={formData.prefAgeMin}
+                      onChange={(e) => setFormData({ ...formData, prefAgeMin: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-center"
+                      placeholder="Min"
+                    />
+                    <input
+                      type="number"
+                      value={formData.prefAgeMax}
+                      onChange={(e) => setFormData({ ...formData, prefAgeMax: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-center"
+                      placeholder="Max"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    প্রত্যাশিত জেলা
+                  </label>
+                  <select
+                    value={formData.prefDistrict}
+                    onChange={(e) => setFormData({ ...formData, prefDistrict: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-amber-400"
+                  >
+                    <option value="">যেকোনো জেলা</option>
+                    {BD_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Wizard Footer Navigation Controls */}
+        <div className="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between gap-3">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep(step - 1)}
+              className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              পূর্ববর্তী ধাপ
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleSave(false)}
+              disabled={saving}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center gap-1.5"
+            >
+              <Save className="w-4 h-4" />
+              সংরক্ষণ
+            </button>
+
+            {step < 4 ? (
+              <button
+                type="button"
+                onClick={() => setStep(step + 1)}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+              >
+                পরবর্তী ধাপ
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSave(true)}
+                disabled={saving}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 flex items-center gap-1.5 shadow-lg shadow-amber-500/25 cursor-pointer"
+              >
+                {saving ? (
+                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    সম্পূর্ণ করে প্রোফাইল দেখুন
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

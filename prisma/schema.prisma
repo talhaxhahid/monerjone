@@ -1,0 +1,231 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum PlanTier {
+  Free
+  Gold
+  Platinum
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  firstName           String           @map("first_name")
+  lastName            String           @map("last_name")
+  gender              Gender
+  dob                 DateTime
+  district            String?
+  religion            String           @default("Islam")
+  maritalStatus       String?          @map("marital_status")
+  phone               String           @unique
+  passwordHash        String           @map("password_hash")
+  role                String           @default("USER") // USER, ADMIN
+  premium             PlanTier         @default(Free)
+  premiumActivatedAt  DateTime?        @map("premium_activated_at")
+  lastActive          DateTime         @default(now()) @map("last_active")
+  profileComplete     Boolean          @default(false) @map("profile_complete")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  profile             Profile?
+  photos              Photo[]
+  sessions            Session[]
+  sentMessages        Message[]        @relation("SentMessages")
+  conversationsA      Conversation[]   @relation("UserA")
+  conversationsB      Conversation[]   @relation("UserB")
+  favoritesGiven      Favorite[]       @relation("FavoritesGiven")
+  favoritesReceived   Favorite[]       @relation("FavoritesReceived")
+  blocksGiven         Block[]          @relation("BlocksGiven")
+  blocksReceived      Block[]          @relation("BlocksReceived")
+  visitsGiven         Visit[]          @relation("VisitsGiven")
+  visitsReceived      Visit[]          @relation("VisitsReceived")
+  phoneUnlocksGiven   PhoneUnlock[]    @relation("UnlocksGiven")
+  phoneUnlocksReceived PhoneUnlock[]   @relation("UnlocksReceived")
+  messageLogs         MessageLog[]
+  paymentRequests     PaymentRequest[]
+
+  @@map("users")
+}
+
+model Profile {
+  id                String    @id @default(cuid())
+  userId            String    @unique @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  heightCm          Int?      @map("height_cm")
+  weightKg          Int?      @map("weight_kg")
+  education         String?
+  subject           String?
+  occupation        String?
+  income            String?
+  familyStatus      String?   @default("Middle class") @map("family_status")
+  fatherOccupation  String?   @map("father_occupation")
+  motherOccupation  String?   @map("mother_occupation")
+  brothers          Int       @default(0)
+  sisters           Int       @default(0)
+  languages         String?
+  introduction      String?   @db.Text
+  longBio           String?   @map("long_bio") @db.Text
+  hobbies           String?   // JSON string
+  favoriteBooks     String?   @map("favorite_books")
+  favoriteFood      String?   @map("favorite_food")
+  smoking           String?
+  prayerFrequency   String?   @map("prayer_frequency")
+  hijabNiqab        String?   @map("hijab_niqab")
+  children          String?
+  allergies         String?
+  healthProblems    String?   @map("health_problems")
+  lookingFor        String?   @map("looking_for") @db.Text
+  prefAgeMin        Int?      @map("pref_age_min")
+  prefAgeMax        Int?      @map("pref_age_max")
+  prefHeight        String?   @map("pref_height")
+  prefEducation     String?   @map("pref_education")
+  prefDistrict      String?   @map("pref_district")
+  workPreference    String?   @map("work_preference")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dataUrl   String   @map("data_url") @db.MediumText
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("photos")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Favorite {
+  userId    String   @map("user_id")
+  targetId  String   @map("target_id")
+  user      User     @relation("FavoritesGiven", fields: [userId], references: [id], onDelete: Cascade)
+  target    User     @relation("FavoritesReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, targetId])
+  @@map("favorites")
+}
+
+model Block {
+  userId    String   @map("user_id")
+  targetId  String   @map("target_id")
+  user      User     @relation("BlocksGiven", fields: [userId], references: [id], onDelete: Cascade)
+  target    User     @relation("BlocksReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, targetId])
+  @@map("blocks")
+}
+
+model Visit {
+  id        String   @id @default(cuid())
+  visitorId String   @map("visitor_id")
+  targetId  String   @map("target_id")
+  visitor   User     @relation("VisitsGiven", fields: [visitorId], references: [id], onDelete: Cascade)
+  target    User     @relation("VisitsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([targetId])
+  @@map("visits")
+}
+
+model PhoneUnlock {
+  userId    String   @map("user_id")
+  targetId  String   @map("target_id")
+  user      User     @relation("UnlocksGiven", fields: [userId], references: [id], onDelete: Cascade)
+  target    User     @relation("UnlocksReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, targetId])
+  @@map("phone_unlocks")
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  userAId       String    @map("user_a")
+  userBId       String    @map("user_b")
+  userA         User      @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB         User      @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+  hiddenByA     Boolean   @default(false) @map("hidden_by_a")
+  hiddenByB     Boolean   @default(false) @map("hidden_by_b")
+  lastMessageAt DateTime  @default(now()) @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  messages      Message[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  fromUserId     String       @map("from_user")
+  fromUser       User         @relation("SentMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
+  text           String       @db.Text
+  readAt         DateTime?    @map("read_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model MessageLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("message_log")
+}
+
+model PaymentRequest {
+  id            String        @id @default(cuid())
+  userId        String        @map("user_id")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan          PlanTier
+  amount        Int
+  bKashNumber   String        @map("bkash_number")
+  trxId         String        @map("trx_id")
+  status        PaymentStatus @default(PENDING)
+  adminNote     String?       @map("admin_note")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("payment_requests")
+}
