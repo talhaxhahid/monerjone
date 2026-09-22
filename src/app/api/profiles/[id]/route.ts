@@ -27,6 +27,10 @@ export async function GET(
       return NextResponse.json({ error: 'বায়োডাটা পাওয়া যায়নি' }, { status: 404 });
     }
 
+    if (!targetUser.active) {
+      return NextResponse.json({ error: 'বায়োডাটা পাওয়া যায়নি' }, { status: 404 });
+    }
+
     let favorited = false;
     let unlocked = false;
     let phone: string | null = null;

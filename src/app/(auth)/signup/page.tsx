@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { BD_DISTRICTS, isBDPhone } from '@/lib/utils';
+import { BD_DISTRICTS, isBDPhone, calculateAge } from '@/lib/utils';
 import { User, Phone, Lock, Calendar, MapPin, Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Heart } from 'lucide-react';
 import BrandLogo from '@/components/layout/BrandLogo';
 
@@ -49,6 +49,10 @@ export default function SignupPage() {
     }
     if (!formData.dob) {
       setError('জন্ম তারিখ প্রদান করুন');
+      return;
+    }
+    if (calculateAge(formData.dob) < 18) {
+      setError('নিবন্ধন করতে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে');
       return;
     }
     if (!isBDPhone(formData.phone)) {

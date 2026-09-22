@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     if (!dob) {
       return NextResponse.json({ error: 'জন্ম তারিখ প্রদান করুন' }, { status: 400 });
     }
+    if (calculateAge(dob) < 18) {
+      return NextResponse.json(
+        { error: 'নিবন্ধন করতে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে' },
+        { status: 400 }
+      );
+    }
     if (!phone || !isBDPhone(phone)) {
       return NextResponse.json(
         { error: 'সঠিক বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)' },
@@ -42,6 +48,17 @@ export async function POST(request: NextRequest) {
     }
 
     const cleanPhone = formatBDPhone(phone);
+
+    // Permanently-deleted (unpaid-fine, never-reactivated) accounts can
+    // never sign up again with the same number, even though their old
+    // User row no longer exists.
+    const banned = await prisma.bannedPhone.findUnique({ where: { phone: cleanPhone } });
+    if (banned) {
+      return NextResponse.json(
+        { error: 'এই মোবাইল নম্বরটি দিয়ে নতুন অ্যাকাউন্ট তৈরি করা যাবে না।' },
+        { status: 403 }
+      );
+    }
 
     // Check if phone already registered
     const existing = await prisma.user.findUnique({

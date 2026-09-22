@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
     const ageMaxParam = searchParams.get('ageMax');
     const sortParam = searchParams.get('sort') || 'newest';
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      active: true,
+    };
 
     // Opposite-gender rule enforced if logged in
     if (me) {

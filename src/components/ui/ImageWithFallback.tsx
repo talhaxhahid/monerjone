@@ -30,6 +30,16 @@ export default function ImageWithFallback({
   useEffect(() => {
     setIsLoading(true);
     setHasError(false);
+    if (!src) return;
+    // Guard against a stuck loading state (e.g. a slow/hanging network
+    // request never firing onLoad or onError) by falling back after 8s.
+    const timeout = setTimeout(() => {
+      setIsLoading((prev) => {
+        if (prev) setHasError(true);
+        return false;
+      });
+    }, 8000);
+    return () => clearTimeout(timeout);
   }, [src]);
 
   const hasValidSrc = Boolean(src && typeof src === 'string' && src.trim() !== '' && !hasError);

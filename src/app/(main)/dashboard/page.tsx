@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [myProfile, setMyProfile] = useState<any>(null);
   const [visitorCount, setVisitorCount] = useState<number>(0);
   const [favoritesCount, setFavoritesCount] = useState<number>(0);
+  const [favoritedByCount, setFavoritedByCount] = useState<number>(0);
   const [phoneUnlockStats, setPhoneUnlockStats] = useState<{ limit: number; used: number; remaining: number }>({
     limit: 0,
     used: 0,
@@ -70,6 +71,13 @@ export default function DashboardPage() {
         if (favRes.ok) {
           const favData = await favRes.json();
           setFavoritesCount(favData.profiles?.length || 0);
+        }
+
+        // 3b. Load who favorited me
+        const favByRes = await fetch('/api/social/favorites?direction=received');
+        if (favByRes.ok) {
+          const favByData = await favByRes.json();
+          setFavoritedByCount(favByData.profiles?.length || 0);
         }
 
         // 4. Load phone unlock quota

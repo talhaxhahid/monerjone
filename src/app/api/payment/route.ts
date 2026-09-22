@@ -48,20 +48,34 @@ export async function POST(request: NextRequest) {
 
     const amount = PLAN_PRICES[plan] || 1350;
 
-    const payment = await prisma.paymentRequest.create({
-      data: {
-        userId: me.id,
-        plan,
-        amount,
-        bKashNumber,
-        trxId: trxId.toUpperCase().trim(),
-        status: 'PENDING',
-      },
-    });
+    // Instant activation, no admin verification -- trusting the member's
+    // own "I've paid" click, matching the original site's behavior. The
+    // payment request is still logged (status APPROVED) for record-keeping
+    // and shows up in payment history, but nothing blocks on manual review.
+    const [payment] = await prisma.$transaction([
+      prisma.paymentRequest.create({
+        data: {
+          userId: me.id,
+          plan,
+          amount,
+          bKashNumber,
+          trxId: trxId.toUpperCase().trim(),
+          status: 'APPROVED',
+          adminNote: 'স্বয়ংক্রিয়ভাবে অনুমোদিত (কোনো ম্যানুয়াল যাচাই ছাড়াই)',
+        },
+      }),
+      prisma.user.update({
+        where: { id: me.id },
+        data: {
+          premium: plan,
+          premiumActivatedAt: new Date(),
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       ok: true,
-      message: 'আপনার বিকাশ পেমেন্ট তথ্য সফলভাবে জমা দেওয়া হয়েছে। এডমিন ভেরিফাই করে দ্রুত আপগ্রেড সম্পন্ন করবেন।',
+      message: `আপনার ${plan} মেম্বারশিপ সফলভাবে চালু হয়েছে!`,
       payment,
     });
   } catch (error: any) {

@@ -3,7 +3,7 @@ import { isStripeConfigured } from '@/lib/stripe';
 
 export async function GET() {
   const stripeEnabled = isStripeConfigured();
-  const bkashNumber = process.env.BKASH_NUMBER || '01700000000';
+  const bkashNumber = process.env.BKASH_NUMBER || '01821124713';
 
   return NextResponse.json({
     stripeEnabled,

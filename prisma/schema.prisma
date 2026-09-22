@@ -40,6 +40,8 @@ model User {
   premiumActivatedAt  DateTime?        @map("premium_activated_at")
   lastActive          DateTime         @default(now()) @map("last_active")
   profileComplete     Boolean          @default(false) @map("profile_complete")
+  active              Boolean          @default(true)
+  deactivatedAt       DateTime?        @map("deactivated_at")
   createdAt           DateTime         @default(now()) @map("created_at")
   updatedAt           DateTime         @updatedAt @map("updated_at")
 
@@ -228,4 +230,15 @@ model PaymentRequest {
 
   @@index([userId])
   @@map("payment_requests")
+}
+
+// Tracks phone numbers of permanently-deleted (never-reactivated,
+// unpaid-fine) accounts, so they can never sign up again -- kept
+// independently of the User row itself, which is fully deleted.
+model BannedPhone {
+  phone     String   @id
+  reason    String   @default("Account deactivated and not reactivated within 60 days")
+  deletedAt DateTime @default(now()) @map("deleted_at")
+
+  @@map("banned_phones")
 }

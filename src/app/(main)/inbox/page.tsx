@@ -60,6 +60,13 @@ function InboxContent() {
   useEffect(() => {
     if (user) {
       loadConversations();
+      // Keep the conversation list itself fresh too (new incoming
+      // conversations, updated previews/unread counts), not just the
+      // currently-open thread.
+      const listInterval = setInterval(() => {
+        loadConversations();
+      }, 8000);
+      return () => clearInterval(listInterval);
     }
   }, [user]);
 
@@ -173,8 +180,8 @@ function InboxContent() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="h-[80vh] min-h-[550px] rounded-3xl bg-[#1F1640]/95 border border-[#FF4D7E]/20 shadow-2xl backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
+    <div className="max-w-7xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6">
+      <div className="h-[calc(100dvh-4rem-3.5rem)] md:h-[80vh] md:min-h-[550px] md:rounded-3xl bg-[#1F1640]/95 md:border md:border-[#FF4D7E]/20 md:shadow-2xl backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
         
         {/* ================= LEFT: CONVERSATIONS LIST ================= */}
         <div
@@ -384,9 +391,15 @@ function InboxContent() {
               >
                 <input
                   type="text"
+                  name="mj-chat-message"
                   placeholder="মেসেজ লিখুন..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  data-lpignore="true"
+                  data-1p-ignore
+                  data-form-type="other"
                   className="flex-1 px-4 py-3 rounded-2xl bg-[#1F1640] border border-white/10 text-[#F5F3FA] text-xs sm:text-sm focus:outline-none focus:border-[#FF4D7E] placeholder:text-[#8B7FA8]"
                 />
                 <button

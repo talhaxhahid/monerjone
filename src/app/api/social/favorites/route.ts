@@ -1,35 +1,76 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateAge, computeMatchScore } from '@/lib/utils';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const me = await getCurrentUser();
     if (!me) {
       return NextResponse.json({ error: 'লগইন করুন' }, { status: 401 });
     }
 
-    const favs = await prisma.favorite.findMany({
-      where: { userId: me.id },
-      include: {
-        target: {
+    // direction=received -> "who favorited me" (reverse lookup);
+    // default -> "my favorites" (who I favorited).
+    const { searchParams } = new URL(request.url);
+    const direction = searchParams.get('direction');
+    const isReceived = direction === 'received';
+
+    const favs = isReceived
+      ? await prisma.favorite.findMany({
+          where: {
+            targetId: me.id,
+            user: { active: true },
+          },
           include: {
-            profile: true,
-            photos: {
-              select: { id: true, position: true },
-              orderBy: { position: 'asc' },
+            user: {
+              include: {
+                profile: true,
+                photos: {
+                  select: { id: true, position: true },
+                  orderBy: { position: 'asc' },
+                },
+              },
             },
           },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+          orderBy: { createdAt: 'desc' },
+        })
+      : await prisma.favorite.findMany({
+          where: {
+            userId: me.id,
+            target: { active: true },
+          },
+          include: {
+            target: {
+              include: {
+                profile: true,
+                photos: {
+                  select: { id: true, position: true },
+                  orderBy: { position: 'asc' },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
 
-    const profiles = favs.map((f) => {
-      const u = f.target;
+    // For the "received" list, whether I've favorited them BACK isn't
+    // automatically true -- look it up so the heart icon reflects reality.
+    let myGivenTargetIds = new Set<string>();
+    if (isReceived) {
+      const mine = await prisma.favorite.findMany({
+        where: { userId: me.id },
+        select: { targetId: true },
+      });
+      myGivenTargetIds = new Set(mine.map((m) => m.targetId));
+    }
+
+    const profiles = favs.map((f: any) => {
+      const u = isReceived ? f.user : f.target;
+      if (!u) return null;
       const age = calculateAge(u.dob);
-      const photoIds = u.photos.map((p) => p.id);
+      const photoIds: string[] = (u.photos || []).map((p: { id: string }) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency });
 
@@ -55,12 +96,12 @@ export async function GET() {
         lastActive: u.lastActive.toISOString(),
         active: isOnline,
         photoIds,
-        photos: photoIds.map((id) => `/api/photos/${id}`),
-        favorited: true,
+        photos: photoIds.map((id: string) => `/api/photos/${id}`),
+        favorited: isReceived ? myGivenTargetIds.has(u.id) : true,
         matchScore,
         createdAt: u.createdAt.toISOString(),
       };
-    });
+    }).filter(Boolean);
 
     return NextResponse.json({ profiles });
   } catch (error: any) {

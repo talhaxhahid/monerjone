@@ -10,15 +10,19 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const { user, unreadCount } = useAuth();
 
+  // Only logged-in users have a use for this nav (guests have nothing behind
+  // "messages"/"profile" anyway), so it's hidden entirely for guests.
+  if (!user) return null;
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#150E2B]/95 border-t border-white/10 backdrop-blur-xl px-2 py-2 safe-bottom shadow-[0_-10px_25px_rgba(0,0,0,0.6)]">
       <div className="grid grid-cols-5 items-center">
         
-        {/* Home */}
+        {/* Home -> dashboard once logged in, matching the original site's behavior */}
         <Link
-          href="/"
+          href="/dashboard"
           className={`flex flex-col items-center py-1 rounded-xl transition-all ${
-            pathname === '/' ? 'text-[#FF4D7E]' : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
+            pathname === '/dashboard' ? 'text-[#FF4D7E]' : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
           }`}
         >
           <Home className="w-5 h-5" />
@@ -49,7 +53,7 @@ export default function MobileBottomNav() {
 
         {/* Messages */}
         <Link
-          href={user ? "/inbox" : "/login"}
+          href="/inbox"
           className={`relative flex flex-col items-center py-1 rounded-xl transition-all ${
             pathname.startsWith('/inbox') ? 'text-[#FF4D7E]' : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
           }`}
@@ -65,17 +69,15 @@ export default function MobileBottomNav() {
 
         {/* Profile / Account */}
         <Link
-          href={user ? "/dashboard" : "/login"}
+          href="/dashboard"
           className={`flex flex-col items-center py-1 rounded-xl transition-all ${
-            pathname.startsWith('/dashboard') || pathname.startsWith('/profile') || pathname.startsWith('/login')
+            pathname.startsWith('/dashboard') || pathname.startsWith('/profile')
               ? 'text-[#FF4D7E]'
               : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
           }`}
         >
           <User className="w-5 h-5" />
-          <span className="text-[10px] mt-1 font-medium">
-            {user ? 'প্রোফাইল' : 'লগইন'}
-          </span>
+          <span className="text-[10px] mt-1 font-medium">প্রোফাইল</span>
         </Link>
       </div>
     </div>

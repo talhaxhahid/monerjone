@@ -1,4 +1,10 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'প্রাইভেসি পলিসি | MonerJone',
+  description: 'ডেটা সংগ্রহ, ব্যবহার এবং সদস্য নিয়ন্ত্রণ সম্পর্কিত মনেরজনে প্রাইভেসি পলিসি পড়ুন।',
+};
 
 export default function PrivacyPage() {
   return (

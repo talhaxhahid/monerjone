@@ -4,14 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Heart, Search } from 'lucide-react';
+import { Heart, Search, UserCheck } from 'lucide-react';
 import ProfileCard from '@/components/profiles/ProfileCard';
 import { ProfileCardData } from '@/types';
+
+type Tab = 'given' | 'received';
 
 export default function FavoritesPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [profiles, setProfiles] = useState<ProfileCardData[]>([]);
+  const [tab, setTab] = useState<Tab>('given');
+  const [givenProfiles, setGivenProfiles] = useState<ProfileCardData[]>([]);
+  const [receivedProfiles, setReceivedProfiles] = useState<ProfileCardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -23,11 +27,14 @@ export default function FavoritesPage() {
   useEffect(() => {
     let isMounted = true;
     if (user) {
-      fetch('/api/social/favorites')
-        .then((res) => (res.ok ? res.json() : { profiles: [] }))
-        .then((data) => {
+      Promise.all([
+        fetch('/api/social/favorites').then((res) => (res.ok ? res.json() : { profiles: [] })),
+        fetch('/api/social/favorites?direction=received').then((res) => (res.ok ? res.json() : { profiles: [] })),
+      ])
+        .then(([given, received]) => {
           if (isMounted) {
-            setProfiles(data.profiles || []);
+            setGivenProfiles(given.profiles || []);
+            setReceivedProfiles(received.profiles || []);
             setLoading(false);
           }
         })
@@ -42,7 +49,10 @@ export default function FavoritesPage() {
 
   const handleFavoriteToggle = (id: string, isFav: boolean) => {
     if (!isFav) {
-      setProfiles((prev) => prev.filter((p) => p.id !== id));
+      setGivenProfiles((prev) => prev.filter((p) => p.id !== id));
+    } else {
+      // If someone in the "received" list gets favorited back, reflect it there too.
+      setReceivedProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, favorited: true } : p)));
     }
   };
 
@@ -54,18 +64,17 @@ export default function FavoritesPage() {
     );
   }
 
+  const activeProfiles = tab === 'given' ? givenProfiles : receivedProfiles;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-white/10 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif flex items-center gap-2.5">
             <Heart className="w-7 h-7 text-[#FF4D7E] fill-[#FF4D7E]" />
             <span>পছন্দের তালিকা (শর্টলিস্ট)</span>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30">
-              {profiles.length} টি
-            </span>
           </h1>
           <p className="text-xs sm:text-sm text-[#B9AFD1] mt-1">
             আপনার পছন্দের পাত্র-পাত্রীর তালিকা। যেকোনো সময় মেসেজ দিন বা যোগাযোগ করুন।
@@ -77,8 +86,32 @@ export default function FavoritesPage() {
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1F1640] border border-[#FF4D7E]/30 text-xs font-semibold text-[#FF4D7E] hover:bg-[#291D54] transition-all"
         >
           <Search className="w-4 h-4" />
-          <span>আরও বায়োডাটা খুঁজুন</span>
+          <span>আরও বায়োডাটা খুঁজুন</span>
         </Link>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 p-1 rounded-2xl bg-[#1F1640]/60 border border-white/10 w-fit">
+        <button
+          onClick={() => setTab('given')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            tab === 'given' ? 'bg-[#FF4D7E] text-white shadow-md' : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
+          }`}
+        >
+          <Heart className="w-3.5 h-3.5" />
+          আপনার ফেভারিট
+          <span className="text-[10px] opacity-80">({givenProfiles.length})</span>
+        </button>
+        <button
+          onClick={() => setTab('received')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            tab === 'received' ? 'bg-[#FF4D7E] text-white shadow-md' : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
+          }`}
+        >
+          <UserCheck className="w-3.5 h-3.5" />
+          যারা আপনাকে ফেভারিট করেছে
+          <span className="text-[10px] opacity-80">({receivedProfiles.length})</span>
+        </button>
       </div>
 
       {/* Grid List */}
@@ -88,9 +121,9 @@ export default function FavoritesPage() {
             <div key={i} className="h-96 rounded-3xl bg-[#1F1640]/60 border border-white/10 animate-pulse" />
           ))}
         </div>
-      ) : profiles.length > 0 ? (
+      ) : activeProfiles.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {profiles.map((p) => (
+          {activeProfiles.map((p) => (
             <ProfileCard
               key={p.id}
               profile={p}
@@ -101,9 +134,13 @@ export default function FavoritesPage() {
       ) : (
         <div className="text-center py-20 rounded-3xl bg-[#1F1640]/50 border border-white/10 space-y-4 max-w-lg mx-auto">
           <Heart className="w-14 h-14 text-white/20 mx-auto" />
-          <h3 className="text-lg font-bold text-[#F5F3FA]">পছন্দের তালিকা খালি</h3>
+          <h3 className="text-lg font-bold text-[#F5F3FA]">
+            {tab === 'given' ? 'পছন্দের তালিকা খালি' : 'এখনও কেউ আপনাকে ফেভারিট করেনি'}
+          </h3>
           <p className="text-xs text-[#B9AFD1]">
-            আপনি এখনও কোনো পাত্র বা পাত্রীর প্রোফাইল পছন্দের তালিকায় যুক্ত করেননি।
+            {tab === 'given'
+              ? 'আপনি এখনও কোনো পাত্র বা পাত্রীর প্রোফাইল পছন্দের তালিকায় যুক্ত করেননি।'
+              : 'আপনার প্রোফাইল আরও আকর্ষণীয় করতে বায়োডাটা সম্পূর্ণ করুন।'}
           </p>
           <Link
             href="/search"

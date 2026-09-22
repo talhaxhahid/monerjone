@@ -10,7 +10,10 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
-  Search
+  Search,
+  Copy,
+  X,
+  KeyRound
 } from 'lucide-react';
 import { bn, timeAgo } from '@/lib/utils';
 
@@ -24,6 +27,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<'payments' | 'users'>('payments');
   const [searchUser, setSearchUser] = useState<string>('');
+  const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading) {
@@ -99,6 +103,57 @@ export default function AdminDashboardPage() {
     }
   };
 
+
+  const handleToggleActive = async (userId: string, name: string, makeActive: boolean) => {
+    if (!makeActive) {
+      const confirmed = window.confirm(
+        `আপনি কি নিশ্চিত ${name}-এর অ্যাকাউন্ট নিষ্ক্রিয় করতে চান? ৬০ দিনের মধ্যে পুনরায় সক্রিয় করা না হলে অ্যাকাউন্টটি স্থায়ীভাবে মুছে যাবে এবং এই নম্বর দিয়ে আর নিবন্ধন করা যাবে না।`
+      );
+      if (!confirmed) return;
+    }
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, active: makeActive }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        addToast(
+          makeActive ? `${name}-এর অ্যাকাউন্ট পুনরায় সক্রিয় করা হয়েছে` : `${name}-এর অ্যাকাউন্ট নিষ্ক্রিয় করা হয়েছে`,
+          makeActive ? 'success' : 'info'
+        );
+        loadAdminData();
+      } else {
+        addToast(data.error || 'আপডেট ব্যর্থ হয়েছে', 'error');
+      }
+    } catch {
+      addToast('সার্ভার ত্রুটি', 'error');
+    }
+  };
+
+  const handleResetPassword = async (userId: string, name: string) => {
+    const confirmed = window.confirm(
+      `${name}-এর জন্য নতুন পাসওয়ার্ড তৈরি করতে চান? পুরনো পাসওয়ার্ড আর কাজ করবে না।`
+    );
+    if (!confirmed) return;
+    try {
+      const res = await fetch('/api/admin/users/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResetPasswordResult({ name, password: data.tempPassword });
+      } else {
+        addToast(data.error || 'পাসওয়ার্ড রিসেট ব্যর্থ হয়েছে', 'error');
+      }
+    } catch {
+      addToast('সার্ভার ত্রুটি', 'error');
+    }
+  };
+
   if (authLoading || !user || user.role !== 'ADMIN') {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -133,7 +188,7 @@ export default function AdminDashboardPage() {
 
       {/* Analytics Counter Grid */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
           <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-white/10 text-center">
             <span className="text-xs text-[#8B7FA8] block">মোট ইউজার</span>
             <span className="text-2xl font-bold text-[#F5F3FA] font-serif mt-1 block">
@@ -168,6 +223,12 @@ export default function AdminDashboardPage() {
             <span className="text-xs text-[#FF4D7E] font-semibold block">পেন্ডিং পেমেন্ট</span>
             <span className="text-2xl font-bold text-[#FF4D7E] font-serif mt-1 block">
               {stats.pendingPayments}
+            </span>
+          </div>
+          <div className="p-4 rounded-2xl bg-[#1F1640]/90 border border-rose-500/30 text-center">
+            <span className="text-xs text-rose-400 font-semibold block">নিষ্ক্রিয় অ্যাকাউন্ট</span>
+            <span className="text-2xl font-bold text-rose-400 font-serif mt-1 block">
+              {stats.totalDeactivated}
             </span>
           </div>
         </div>
@@ -310,6 +371,7 @@ export default function AdminDashboardPage() {
                   <th className="p-4">জেলা</th>
                   <th className="p-4">প্যাকেজ</th>
                   <th className="p-4">বায়োডাটা অবস্থা</th>
+                  <th className="p-4">অ্যাকাউন্ট স্ট্যাটাস</th>
                   <th className="p-4">ছবি</th>
                   <th className="p-4 text-right">প্যাকেজ পরিবর্তন</th>
                 </tr>
@@ -337,22 +399,112 @@ export default function AdminDashboardPage() {
                         <span className="text-[#8B7FA8]">অসম্পূর্ণ</span>
                       )}
                     </td>
+                    <td className="p-4">
+                      {u.active ? (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          সক্রিয়
+                        </span>
+                      ) : (
+                        <div className="space-y-1">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 inline-block">
+                            নিষ্ক্রিয়
+                          </span>
+                          {u.daysUntilDeletion !== null && (
+                            <div className="text-[10px] text-rose-300">
+                              {u.daysUntilDeletion} দিনে স্থায়ী মুছে যাবে
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td className="p-4">{u.photoCount} টি ছবি</td>
                     <td className="p-4 text-right">
-                      <select
-                        value={u.premium}
-                        onChange={(e) => handleUserPlanUpdate(u.id, e.target.value)}
-                        className="px-2.5 py-1 rounded-lg bg-[#150E2B] border border-white/10 text-[11px] text-[#FF4D7E] font-bold focus:border-[#FF4D7E] cursor-pointer outline-none"
-                      >
-                        <option value="Free">ফ্রি (Free)</option>
-                        <option value="Gold">গোল্ড (Gold)</option>
-                        <option value="Platinum">প্লাটিনাম (Platinum)</option>
-                      </select>
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
+                        <select
+                          value={u.premium}
+                          onChange={(e) => handleUserPlanUpdate(u.id, e.target.value)}
+                          className="px-2.5 py-1 rounded-lg bg-[#150E2B] border border-white/10 text-[11px] text-[#FF4D7E] font-bold focus:border-[#FF4D7E] cursor-pointer outline-none"
+                        >
+                          <option value="Free">ফ্রি (Free)</option>
+                          <option value="Gold">গোল্ড (Gold)</option>
+                          <option value="Platinum">প্লাটিনাম (Platinum)</option>
+                        </select>
+                        {u.active ? (
+                          <button
+                            onClick={() => handleToggleActive(u.id, u.name, false)}
+                            className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-400 font-bold hover:bg-rose-500/20 transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            নিষ্ক্রিয় করুন
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleActive(u.id, u.name, true)}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-400 font-bold hover:bg-emerald-500/20 transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            পুনরায় সক্রিয় করুন
+                          </button>
+                        )}
+                          <button
+                            onClick={() => handleResetPassword(u.id, u.name)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-400 font-bold hover:bg-amber-500/20 transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            পাসওয়ার্ড রিসেট
+                          </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {resetPasswordResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="max-w-md w-full rounded-3xl bg-[#1F1640] border border-amber-500/30 shadow-2xl p-6 space-y-5">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-[#F5F3FA]">
+                  {resetPasswordResult.name}-এর নতুন পাসওয়ার্ড
+                </h3>
+              </div>
+              <button
+                onClick={() => setResetPasswordResult(null)}
+                className="text-[#8B7FA8] hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[#150E2B] border border-white/10">
+              <code className="flex-1 text-[#F5B942] font-mono text-lg tracking-wider select-all">
+                {resetPasswordResult.password}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(resetPasswordResult.password);
+                  addToast('কপি করা হয়েছে', 'success');
+                }}
+                className="p-2 rounded-lg bg-[#1F1640] border border-white/10 text-[#B9AFD1] hover:text-white cursor-pointer"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-rose-300 leading-relaxed">
+              এই পাসওয়ার্ডটি এখনই কপি করে ব্যবহারকারীকে জানিয়ে দিন -- বন্ধ করার পর এটি আর কোথাও দেখা যাবে না। ব্যবহারকারীর পুরনো পাসওয়ার্ড আর কাজ করবে না।
+            </p>
+
+            <button
+              onClick={() => setResetPasswordResult(null)}
+              className="w-full py-2.5 rounded-xl bg-[#FF4D7E] hover:bg-[#E63465] text-white text-sm font-bold transition-all cursor-pointer"
+            >
+              বন্ধ করুন
+            </button>
           </div>
         </div>
       )}

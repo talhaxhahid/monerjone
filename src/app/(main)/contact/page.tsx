@@ -1,125 +1,74 @@
-'use client';
+import React from 'react';
+import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import type { Metadata } from 'next';
 
-import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Send } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+export const metadata: Metadata = {
+  title: 'Contact Us | MonerJone',
+  description: 'Get in touch with the MonerJone support team.',
+};
 
 export default function ContactPage() {
-  const { addToast } = useAuth();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSent(true);
-    addToast('আপনার বার্তা সফলভাবে প্রেরণ করা হয়েছে। আমরা দ্রুত যোগাযোগ করব।', 'success');
-  };
-
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       <div className="text-center space-y-3">
         <h1 className="text-3xl sm:text-5xl font-extrabold text-[#F5F3FA] font-serif">
-          যোগাযোগ ও সাপোর্ট
+          Contact Us
         </h1>
         <p className="text-sm text-[#B9AFD1] max-w-xl mx-auto">
-          যেকোনো জিজ্ঞাসা, প্যাকেজ আপগ্রেড সহায়তা বা পরামর্শের জন্য আমাদের সাথে নির্দ্বিধায় যোগাযোগ করুন।
+          Questions, feedback, or need help with your account? We&apos;d love to hear from you.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        
-        {/* Contact info */}
-        <div className="md:col-span-5 p-6 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl space-y-6">
-          <h3 className="text-lg font-bold text-[#F5F3FA] pb-3 border-b border-white/10">
-            হেল্পলাইন ও অফিস
-          </h3>
-
-          <div className="space-y-4 text-xs text-[#B9AFD1]">
-            <div className="flex items-start gap-3">
-              <Phone className="w-4 h-4 text-[#FF4D7E] shrink-0 mt-1" />
-              <div>
-                <span className="font-bold text-[#F5F3FA] block">সাপোর্ট হটলাইন:</span>
-                <span className="font-mono text-[#FF4D7E]">+880 1700-000000</span>
-                <span className="text-slate-400 block">সকাল ১০টা থেকে রাত ১০টা পর্যন্ত</span>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Mail className="w-4 h-4 text-[#FF4D7E] shrink-0 mt-1" />
-              <div>
-                <span className="font-bold text-[#F5F3FA] block">ইমেইল:</span>
-                <span className="text-slate-200">support@monerjone.com</span>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <MapPin className="w-4 h-4 text-[#FF4D7E] shrink-0 mt-1" />
-              <div>
-                <span className="font-bold text-[#F5F3FA] block">প্রধান কার্যালয়:</span>
-                <span className="text-slate-200">ধানমন্ডি, ঢাকা - ১২০৯, বাংলাদেশ</span>
-              </div>
-            </div>
+      <div className="p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#150E2B] border border-white/10 flex items-center justify-center text-[#FF4D7E] shrink-0">
+            <MapPin className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-[#F5F3FA] block text-sm">Office</span>
+            <p className="text-xs text-[#B9AFD1] mt-0.5">Gulshan Avenue, Dhaka 1212, Bangladesh</p>
           </div>
         </div>
 
-        {/* Message form */}
-        <div className="md:col-span-7 p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl">
-          {sent ? (
-            <div className="py-12 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-xl">
-                ✓
-              </div>
-              <h3 className="text-lg font-bold text-[#F5F3FA]">বার্তা প্রাপ্ত হয়েছে!</h3>
-              <p className="text-xs text-[#B9AFD1]">আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন।</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <h3 className="text-base font-bold text-[#F5F3FA] mb-2">সরাসরি মেসেজ পাঠান</h3>
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">আপনার নাম</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:border-[#FF4D7E] outline-none"
-                  required
-                />
-              </div>
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#150E2B] border border-white/10 flex items-center justify-center text-[#FF4D7E] shrink-0">
+            <Mail className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-[#F5F3FA] block text-sm">Email</span>
+            <a href="mailto:monerjone.com@gmail.com" className="text-xs text-[#B9AFD1] hover:text-[#FF4D7E] mt-0.5 block">
+              monerjone.com@gmail.com
+            </a>
+          </div>
+        </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">মোবাইল নম্বর</label>
-                <input
-                  type="tel"
-                  placeholder="01XXXXXXXXX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:border-[#FF4D7E] outline-none"
-                  required
-                />
-              </div>
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#150E2B] border border-white/10 flex items-center justify-center text-[#FF4D7E] shrink-0">
+            <Phone className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-[#F5F3FA] block text-sm">Phone</span>
+            <a href="tel:01627721328" className="text-xs text-[#B9AFD1] hover:text-[#FF4D7E] mt-0.5 block">
+              01627721328
+            </a>
+          </div>
+        </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">আপনার বার্তা / জিজ্ঞাসা</label>
-                <textarea
-                  rows={4}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:border-[#FF4D7E] outline-none"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl font-bold text-xs bg-[#FF4D7E] hover:bg-[#E63465] text-white flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
-              >
-                <Send className="w-4 h-4" />
-                <span>বার্তা পাঠান</span>
-              </button>
-            </form>
-          )}
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <MessageCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-[#F5F3FA] block text-sm">WhatsApp</span>
+            <a
+              href="https://wa.me/+8801627721328"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[#B9AFD1] hover:text-[#FF4D7E] mt-0.5 block"
+            >
+              Message us on WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </div>

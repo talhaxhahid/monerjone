@@ -13,6 +13,9 @@ interface AuthContextType {
   user: UserPublic | null;
   loading: boolean;
   unreadCount: number;
+  expiredPlanNotice: string | null;
+  clearExpiredPlanNotice: () => void;
+  lockInfo: { daysRemaining: number } | null;
   login: (phone: string, pass: string) => Promise<{ ok: boolean; error?: string }>;
   signup: (formData: any) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -30,6 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserPublic | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [expiredPlanNotice, setExpiredPlanNotice] = useState<string | null>(null);
+  const clearExpiredPlanNotice = () => setExpiredPlanNotice(null);
+  const [lockInfo, setLockInfo] = useState<{ daysRemaining: number } | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -73,12 +79,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
-        if (data.unreadCount !== undefined) {
-          setUnreadCount(data.unreadCount);
+        if (data.locked) {
+          setUser(null);
+          setLockInfo({ daysRemaining: data.daysRemaining ?? 0 });
+        } else {
+          setUser(data.user);
+          setLockInfo(null);
+          if (data.unreadCount !== undefined) {
+            setUnreadCount(data.unreadCount);
+          }
+          if (data.justExpiredPlan) {
+            setExpiredPlanNotice(data.justExpiredPlan);
+          }
         }
       } else {
         setUser(null);
+        setLockInfo(null);
       }
     } catch (err) {
       setUser(null);
@@ -102,7 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         return { ok: false, error: data.error || 'লগইন ব্যর্থ হয়েছে' };
       }
-      setUser(data.user);
+      // Don't trust the login response's user data directly -- refreshUser()
+      // is the one place that checks locked/deactivated status, so route
+      // through it to make sure a locked account doesn't briefly appear
+      // "logged in normally" before being caught.
+      await refreshUser();
       addToast(`স্বাগতম, ${data.user.firstName}!`, 'success');
       return { ok: true };
     } catch (err: any) {
@@ -152,6 +172,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         unreadCount,
+        expiredPlanNotice,
+        clearExpiredPlanNotice,
+        lockInfo,
         login,
         signup,
         logout,

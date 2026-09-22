@@ -89,7 +89,7 @@ export default function ProfileCard({
       }`}
     >
       {/* Top Image / Avatar container */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#150E2B] flex items-center justify-center">
+      <div className="relative aspect-square w-full overflow-hidden bg-[#150E2B] flex items-center justify-center">
         <ImageWithFallback
           src={photoUrl}
           alt={profile.name}

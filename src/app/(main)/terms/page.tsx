@@ -1,4 +1,10 @@
 import React from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'শর্তাবলী | MonerJone',
+  description: 'সদস্যদের আচরণ, মেসেজিং ও বিলিং সম্পর্কিত মনেরজনে শর্তাবলী পড়ুন।',
+};
 
 export default function TermsPage() {
   return (

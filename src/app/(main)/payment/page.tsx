@@ -33,7 +33,7 @@ function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const planParam = (searchParams.get('plan') || 'gold').toLowerCase();
-  const { user, loading: authLoading, addToast } = useAuth();
+  const { user, loading: authLoading, addToast, refreshUser } = useAuth();
 
   const isPlatinum = planParam === 'platinum';
   const planName = isPlatinum ? 'Platinum' : 'Gold';
@@ -44,7 +44,7 @@ function PaymentContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [bkashNumber, setBkashNumber] = useState('01700000000');
+  const [bkashNumber, setBkashNumber] = useState('01821124713');
   const [stripeEnabled, setStripeEnabled] = useState(false);
   const [loadingStripe, setLoadingStripe] = useState(false);
   const [history, setHistory] = useState<PaymentHistoryItem[]>([]);
@@ -145,11 +145,16 @@ function PaymentContent() {
       const data = await res.json();
       if (res.ok) {
         setSubmittedSuccess(true);
-        addToast('পেমেন্ট সফলভাবে জমা দেওয়া হয়েছে!', 'success');
+        addToast(data.message || `আপনার ${planName} মেম্বারশিপ সফলভাবে চালু হয়েছে!`, 'success');
         // Refresh history
         if (data.payment) {
           setHistory((prev) => [data.payment, ...prev]);
         }
+        // Pull the newly-activated premium status into the auth context
+        // right away, then head to the dashboard so the upgrade is visible
+        // immediately instead of leaving them on the payment form.
+        await refreshUser();
+        setTimeout(() => router.push('/dashboard'), 1200);
       } else {
         setError(data.error || 'পেমেন্ট জমা দিতে সমস্যা হয়েছে');
       }
@@ -191,11 +196,11 @@ function PaymentContent() {
             ✓
           </div>
           <h2 className="text-xl font-bold text-[#F5F3FA]">
-            আপনার বিকাশ পেমেন্ট তথ্য সফলভাবে জমা হয়েছে!
+            {bn(planName)} মেম্বারশিপ চালু হয়েছে!
           </h2>
           <p className="text-xs sm:text-sm text-[#B9AFD1] max-w-md mx-auto leading-relaxed">
-            ধন্যবাদ! আপনার TrxID টি আমাদের এডমিন ভেরিফাই করছেন। অল্প সময়ের মধ্যেই আপনার অ্যাকাউন্টটি{' '}
-            <strong className="text-[#F5B942]">{bn(planName)}</strong> প্যাকেজে আপগ্রেড হয়ে যাবে।
+            ধন্যবাদ! আপনার অ্যাকাউন্ট এখনই{' '}
+            <strong className="text-[#F5B942]">{bn(planName)}</strong> প্যাকেজে আপগ্রেড করা হয়েছে। ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে...
           </p>
           <div className="pt-2 flex justify-center gap-3">
             <button

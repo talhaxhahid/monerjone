@@ -168,8 +168,18 @@ export default function Navbar() {
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                     className="flex items-center gap-2.5 p-1 rounded-full bg-[#1F1640] border border-white/15 hover:border-[#FF4D7E]/60 transition-all focus:outline-none cursor-pointer"
                   >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-bold flex items-center justify-center text-sm shadow-inner">
-                      {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
+                    <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#8b5cf6] via-[#c026d3] to-[#7c3aed] shrink-0">
+                      {user.photoUrl ? (
+                        <img
+                          src={user.photoUrl}
+                          alt={user.firstName}
+                          className="w-full h-full rounded-full object-cover border-2 border-[#1F1640]"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full border-2 border-[#1F1640] bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-bold flex items-center justify-center text-sm">
+                          {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
                     </div>
                     <span className="hidden lg:inline text-sm font-medium text-slate-200 pr-2">
                       {user.firstName}
@@ -332,8 +342,18 @@ export default function Navbar() {
               {user ? (
                 <div className="p-4 rounded-2xl bg-gradient-to-tr from-[#1F1640] to-[#331A5C] border border-[#FF4D7E]/30 shadow-lg space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-extrabold flex items-center justify-center text-lg shadow-md border-2 border-white/20">
-                      {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
+                    <div className="w-12 h-12 rounded-full p-[2.5px] bg-gradient-to-tr from-[#8b5cf6] via-[#c026d3] to-[#7c3aed] shrink-0">
+                      {user.photoUrl ? (
+                        <img
+                          src={user.photoUrl}
+                          alt={user.firstName}
+                          className="w-full h-full rounded-full object-cover border-2 border-[#1F1640]"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full border-2 border-[#1F1640] bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-extrabold flex items-center justify-center text-lg">
+                          {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-[#F5F3FA] truncate">

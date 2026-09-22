@@ -15,6 +15,7 @@ export interface UserPublic {
   lastActive: string;
   profileComplete: boolean;
   createdAt: string;
+  photoUrl?: string | null;
 }
 
 export interface ProfileDetails {
