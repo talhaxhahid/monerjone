@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
         district: target.district,
         premium: target.premium,
         photoId: target.photos[0]?.id || null,
+        photoUrl: target.photos[0]?.id ? `/api/photos/${target.photos[0].id}` : null,
       },
     });
   } catch (error: any) {

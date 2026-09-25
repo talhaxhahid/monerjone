@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'payments' | 'users'>('payments');
+  const [activeTab, setActiveTab] = useState<'payments' | 'users'>('users');
   const [searchUser, setSearchUser] = useState<string>('');
   const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string } | null>(null);
 

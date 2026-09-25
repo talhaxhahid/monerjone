@@ -69,11 +69,11 @@ export default function LoginPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-[#F5F3FA] leading-snug font-serif">
-              মনের মতো সৎ ও দ্বীনদার জীবনসঙ্গী খুঁজে নিন সহজেই
+              আবার স্বাগতম
             </h2>
 
             <p className="text-xs text-[#B9AFD1] leading-relaxed">
-              হাজারো পাত্র-পাত্রীর মধ্য থেকে আপনার পছন্দের মানুষটিকে বেছে নিতে লগইন করুন এবং যোগাযোগ শুরু করুন।
+              আন্তরিক ও সুচিন্তিত বিয়ের পথে আপনার যাত্রা চালিয়ে যান। আপনার ম্যাচ ও মেসেজ অপেক্ষা করছে।
             </p>
 
             {/* Feature Bullets */}
@@ -116,11 +116,14 @@ export default function LoginPage() {
           {/* Desktop Heading */}
           <div className="hidden lg:block mb-8">
             <h1 className="text-2xl font-bold text-[#F5F3FA] font-serif flex items-center gap-2">
-              <span>লগইন করুন</span>
+              <span>লগ ইন</span>
               <Heart className="w-5 h-5 text-[#FF4D7E] fill-[#FF4D7E]" />
             </h1>
-            <p className="text-xs text-[#B9AFD1] mt-1">
-              আপনার মোবাইল নম্বর ও পাসওয়ার্ড দিয়ে অ্যাকাউন্টে প্রবেশ করুন
+            <p className="text-xs text-[#B9AFD1] mt-2">
+              নতুন এসেছেন?{' '}
+              <Link href="/signup" className="font-bold text-[#FF4D7E] hover:text-[#FF4D7E]/80">
+                একটি ফ্রি অ্যাকাউন্ট তৈরি করুন
+              </Link>
             </p>
           </div>
 

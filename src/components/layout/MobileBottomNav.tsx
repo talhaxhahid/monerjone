@@ -67,11 +67,11 @@ export default function MobileBottomNav() {
           <span className="text-[10px] mt-1 font-medium">মেসেজ</span>
         </Link>
 
-        {/* Profile / Account */}
+        {/* Profile / My Biodata */}
         <Link
-          href="/dashboard"
+          href={`/profile/${user.id}`}
           className={`flex flex-col items-center py-1 rounded-xl transition-all ${
-            pathname.startsWith('/dashboard') || pathname.startsWith('/profile')
+            pathname === `/profile/${user.id}`
               ? 'text-[#FF4D7E]'
               : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
           }`}

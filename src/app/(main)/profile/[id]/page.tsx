@@ -18,7 +18,10 @@ import {
   Share2,
   Ban,
   CheckCircle2,
-  Users
+  Users,
+  Edit3,
+  User as UserIcon,
+  Moon
 } from 'lucide-react';
 import { bn, cmToFeetInches } from '@/lib/utils';
 import UpgradeModal from '@/components/ui/UpgradeModal';
@@ -39,6 +42,7 @@ export default function ProfileDetailPage() {
   const [unlockLoading, setUnlockLoading] = useState<boolean>(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState<boolean>(false);
   const [upgradeModalMsg, setUpgradeModalMsg] = useState<string>('');
+  const [limitReached, setLimitReached] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -53,7 +57,14 @@ export default function ProfileDetailPage() {
           setPhoneUnlocked(data.profile.unlocked || false);
           setPhoneNumber(data.profile.phone || null);
         } else {
-          addToast('প্রোফাইল খুঁজে পাওয়া যায়নি', 'error');
+          const data = await res.json().catch(() => null);
+          if (res.status === 403 && data?.error === 'DAILY_LIMIT_REACHED') {
+            setLimitReached(true);
+            setUpgradeModalMsg(data.message);
+            setUpgradeModalOpen(true);
+          } else {
+            addToast('প্রোফাইল খুঁজে পাওয়া যায়নি', 'error');
+          }
         }
       } catch (err) {
         console.error(err);
@@ -170,12 +181,32 @@ export default function ProfileDetailPage() {
   }
 
   if (!profile) {
+    if (limitReached) {
+      return (
+        <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#F5B942]/10 border border-[#F5B942]/30 flex items-center justify-center text-[#F5B942] mx-auto">
+            <Lock className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-bold text-[#F5F3FA]">আজকের ফ্রি সীমা শেষ হয়েছে</h2>
+          <p className="text-xs text-[#8B7FA8]">{upgradeModalMsg}</p>
+          <Link href="/pricing" className="inline-block px-5 py-2.5 rounded-xl text-xs font-bold bg-[#F5B942] hover:bg-[#E5A934] text-[#291704] transition-all">
+            সীমাহীন বায়োডাটা দেখতে আপগ্রেড করুন
+          </Link>
+          <UpgradeModal
+            isOpen={upgradeModalOpen}
+            onClose={() => setUpgradeModalOpen(false)}
+            title="দৈনিক সীমা শেষ হয়েছে"
+            description={upgradeModalMsg}
+          />
+        </div>
+      );
+    }
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="text-xl font-bold text-[#F5F3FA]">বায়োডাটা পাওয়া যায়নি</h2>
         <p className="text-xs text-[#8B7FA8]">প্রোফাইলটি মুছে ফেলা হয়েছে বা লিংকটি সঠিক নয়।</p>
         <Link href="/search" className="inline-block px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FF4D7E] hover:bg-[#E63465] text-white transition-all">
-          অন্যান্য বায়োডাটা খুঁজুন
+          অন্যান্য বায়োডাটা খুঁজুন
         </Link>
       </div>
     );
@@ -267,31 +298,40 @@ export default function ProfileDetailPage() {
                       <CheckCircle2 className="w-6 h-6 text-sky-400" />
                     )}
                   </h1>
-                  <span className="text-xs text-[#FF4D7E] font-mono mt-0.5 block">
-                    বায়োডাটা আইডি: #MJ-{profile.id.substring(0, 7).toUpperCase()}
-                  </span>
                 </div>
 
-                {/* Favorite & Share Buttons */}
+                {/* Favorite, Share & Edit Buttons */}
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleShare}
-                    className="p-2.5 rounded-xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/60 text-[#B9AFD1] hover:text-white transition-colors cursor-pointer"
-                    title="লিংক কপি করুন"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                      isFav
-                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
-                        : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:text-[#FF4D7E]'
-                    }`}
-                    title="পছন্দের তালিকা"
-                  >
-                    <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-400' : ''}`} />
-                  </button>
+                  {isSelf ? (
+                    <Link
+                      href="/profile/edit"
+                      className="px-3.5 py-2.5 rounded-xl bg-[#FF4D7E] hover:bg-[#E63465] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>এডিট করুন</span>
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleShare}
+                        className="p-2.5 rounded-xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/60 text-[#B9AFD1] hover:text-white transition-colors cursor-pointer"
+                        title="লিংক কপি করুন"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleToggleFavorite}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          isFav
+                            ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
+                            : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:text-[#FF4D7E]'
+                        }`}
+                        title="পছন্দের তালিকা"
+                      >
+                        <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-400' : ''}`} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -338,32 +378,14 @@ export default function ProfileDetailPage() {
             {/* Actions Card Footer */}
             {!isSelf && (
               <div className="p-4 rounded-2xl bg-[#150E2B] border border-[#FF4D7E]/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                {/* Phone Unlock Button */}
-                <div className="flex-1">
-                  {phoneUnlocked && phoneNumber ? (
-                    <div className="flex items-center gap-2 text-emerald-400 bg-emerald-950/40 px-4 py-2.5 rounded-xl border border-emerald-500/30">
-                      <Phone className="w-4 h-4 shrink-0" />
-                      <span className="text-sm font-bold font-mono select-all">
-                        {phoneNumber}
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleUnlockPhone}
-                      disabled={unlockLoading}
-                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#331A5C] hover:bg-[#4B2380] text-[#F5F3FA] border border-white/10 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                    >
-                      {unlockLoading ? (
-                        <div className="w-4 h-4 border-2 border-[#FF4D7E] border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4 text-[#FF4D7E]" />
-                          <span>মোবাইল নম্বর আনলক করুন</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
+                {phoneUnlocked && phoneNumber && (
+                  <div className="flex-1 flex items-center gap-2 text-emerald-400 bg-emerald-950/40 px-4 py-2.5 rounded-xl border border-emerald-500/30">
+                    <Phone className="w-4 h-4 shrink-0" />
+                    <span className="text-sm font-bold font-mono select-all">
+                      {phoneNumber}
+                    </span>
+                  </div>
+                )}
 
                 {/* Send Message Button */}
                 <Link
@@ -385,7 +407,7 @@ export default function ProfileDetailPage() {
         {/* 1. Basic & Physical Details */}
         <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
           <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
-            <span className="text-[#FF4D7E]">👤</span>
+            <UserIcon className="w-5 h-5 text-[#FF4D7E]" />
             মৌলিক ও শারীরিক তথ্য
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -441,7 +463,7 @@ export default function ProfileDetailPage() {
         {/* 3. Religious Practices & Deen */}
         <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-4">
           <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
-            <span className="text-[#FF4D7E]">🕌</span>
+            <Moon className="w-5 h-5 text-[#FF4D7E]" />
             ধর্মীয় ও লাইফস্টাইল বিবরণ
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -536,6 +558,35 @@ export default function ProfileDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Unlock Phone Number — its own dedicated section to encourage upgrading */}
+      {!isSelf && !phoneUnlocked && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#331A5C] to-[#1F1640] border border-[#F5B942]/30 shadow-xl flex flex-col sm:flex-row items-center gap-6">
+          <div className="w-14 h-14 rounded-2xl bg-[#F5B942]/10 border border-[#F5B942]/30 flex items-center justify-center text-[#F5B942] shrink-0">
+            <Lock className="w-7 h-7" />
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className="text-base sm:text-lg font-bold text-[#F5F3FA]">মোবাইল নম্বর দেখুন এবং সরাসরি যোগাযোগ করুন</h3>
+            <p className="text-xs sm:text-sm text-[#B9AFD1] mt-1">
+              গোল্ড বা প্লাটিনাম মেম্বারশিপে আপগ্রেড করে {profile.name}-এর মোবাইল নম্বর আনলক করুন এবং সরাসরি কথা বলুন।
+            </p>
+          </div>
+          <button
+            onClick={handleUnlockPhone}
+            disabled={unlockLoading}
+            className="w-full sm:w-auto shrink-0 py-3 px-6 rounded-xl text-sm font-bold bg-[#F5B942] hover:bg-[#E5A934] text-[#291704] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+          >
+            {unlockLoading ? (
+              <div className="w-4 h-4 border-2 border-[#291704] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <Crown className="w-4 h-4" />
+                <span>নম্বর আনলক করুন</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Safety & Moderation Actions */}
       {!isSelf && (

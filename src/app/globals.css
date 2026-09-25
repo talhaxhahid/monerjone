@@ -36,6 +36,7 @@
     --color-ink-faint: #8B7FA8;
     --color-border: rgba(255, 255, 255, 0.12);
     --color-border-glow: rgba(255, 77, 126, 0.35);
+    --font-display: 'Baloo 2', 'Manrope', system-ui, sans-serif;
   }
 
   * {

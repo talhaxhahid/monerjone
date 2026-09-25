@@ -7,7 +7,6 @@ import {
   MessageCircle,
   Send,
   ArrowLeft,
-  ShieldAlert,
   Search,
   CheckCheck
 } from 'lucide-react';
@@ -128,7 +127,7 @@ function InboxContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!messageText.trim() || !activeConvId || sending) return;
 
@@ -287,21 +286,24 @@ function InboxContent() {
 
         {/* ================= RIGHT: ACTIVE CHAT SCREEN ================= */}
         <div
-          className={`md:col-span-8 lg:col-span-8 flex flex-col h-full bg-[#150E2B]/50 ${
-            !activeConvId ? 'hidden md:flex items-center justify-center' : 'flex'
+          className={`flex flex-col bg-[#150E2B] md:bg-[#150E2B]/50 ${
+            activeConvId
+              ? 'fixed inset-0 z-50 h-dvh md:static md:inset-auto md:z-auto md:h-full md:col-span-8 lg:col-span-8'
+              : 'hidden md:flex md:col-span-8 lg:col-span-8 md:items-center md:justify-center'
           }`}
         >
           {activeConvId && activeRecipient ? (
             <>
-              {/* Chat Top Header */}
-              <div className="p-4 border-b border-white/10 bg-[#150E2B]/90 flex items-center justify-between">
+              {/* Chat Top Header — pinned; stays put when the keyboard opens */}
+              <div className="shrink-0 p-4 border-b border-white/10 bg-[#150E2B]/90 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setActiveConvId(null)}
-                    className="md:hidden p-1.5 rounded-lg text-[#8B7FA8] hover:text-[#F5F3FA]"
+                    className="p-1.5 rounded-lg text-[#8B7FA8] hover:text-[#F5F3FA]"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
+
 
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[#331A5C] border border-[#FF4D7E]/20 shrink-0">
                     <ImageWithFallback
@@ -341,14 +343,7 @@ function InboxContent() {
               </div>
 
               {/* Chat Messages Body */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5">
-                {/* Security alert banner inside chat */}
-                <div className="p-3 rounded-2xl bg-[#FF4D7E]/10 border border-[#FF4D7E]/20 text-center text-xs text-[#FF4D7E] flex items-center justify-center gap-2">
-                  <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span>
-                    শালীন ও ইসলামিক শিষ্টাচার বজায় রেখে আলোচনা করুন।
-                  </span>
-                </div>
+              <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-3.5">
 
                 {loadingMessages ? (
                   <div className="py-8 text-center text-xs text-[#8B7FA8]">মেসেজ লোড হচ্ছে...</div>
@@ -384,17 +379,22 @@ function InboxContent() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Input Field Form */}
-              <form
-                onSubmit={handleSendMessage}
-                className="p-3 sm:p-4 border-t border-white/10 bg-[#150E2B] flex items-center gap-2"
-              >
+              {/* Chat Input Field — not a <form>, so browsers don't try to
+                  offer password/card/address autofill suggestions above the
+                  keyboard. Enter submits, matching normal chat-app behavior. */}
+              <div className="shrink-0 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-white/10 bg-[#150E2B] flex items-center gap-2">
                 <input
                   type="text"
                   name="mj-chat-message"
                   placeholder="মেসেজ লিখুন..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
                   autoComplete="off"
                   autoCorrect="off"
                   data-lpignore="true"
@@ -403,13 +403,14 @@ function InboxContent() {
                   className="flex-1 px-4 py-3 rounded-2xl bg-[#1F1640] border border-white/10 text-[#F5F3FA] text-xs sm:text-sm focus:outline-none focus:border-[#FF4D7E] placeholder:text-[#8B7FA8]"
                 />
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSendMessage}
                   disabled={!messageText.trim() || sending}
                   className="p-3 rounded-2xl bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-md shadow-[#FF4D7E]/20 disabled:opacity-40 transition-all cursor-pointer"
                 >
                   <Send className="w-5 h-5" />
                 </button>
-              </form>
+              </div>
             </>
           ) : (
             <div className="p-8 text-center space-y-3">

@@ -7,7 +7,6 @@ import {
   Phone,
   CheckCircle2,
   Copy,
-  ArrowRight,
   ShieldCheck,
   AlertCircle,
   Clock,
@@ -40,7 +39,6 @@ function PaymentContent() {
   const planAmount = isPlatinum ? 2499 : 1350;
 
   const [bKashSender, setBKashSender] = useState('');
-  const [trxId, setTrxId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -125,10 +123,6 @@ function PaymentContent() {
       setError('সঠিক বিকাশ মোবাইল নম্বর প্রদান করুন (যেমন: 017XXXXXXXX)');
       return;
     }
-    if (!trxId || trxId.length < 6) {
-      setError('সঠিক বিকাশ TrxID প্রদান করুন');
-      return;
-    }
 
     setSubmitting(true);
     try {
@@ -138,7 +132,6 @@ function PaymentContent() {
         body: JSON.stringify({
           plan: planName,
           bKashNumber: bKashSender,
-          trxId: trxId.trim(),
         }),
       });
 
@@ -212,7 +205,6 @@ function PaymentContent() {
             <button
               onClick={() => {
                 setSubmittedSuccess(false);
-                setTrxId('');
                 setBKashSender('');
               }}
               className="px-5 py-3 rounded-xl text-xs font-semibold bg-[#150E2B] text-[#B9AFD1] hover:text-[#F5F3FA] border border-white/10 transition-all cursor-pointer"
@@ -222,56 +214,93 @@ function PaymentContent() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Instructions Card (Md 6 cols) */}
-          <div className="md:col-span-6 p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-pink-500/20 shadow-xl space-y-6">
-            <div>
-              <span className="text-xs font-bold text-pink-400 uppercase tracking-wider block mb-1">
-                পেমেন্ট বিবরণী:
-              </span>
-              <div className="flex items-baseline justify-between pt-1 pb-3 border-b border-white/10">
-                <span className="text-base font-bold text-[#F5F3FA]">{bn(planName)} প্যাকেজ (৩০ দিন)</span>
-                <span className="text-2xl font-extrabold text-[#F5B942] font-serif">৳ {planAmount}</span>
+        <div className="max-w-lg mx-auto">
+
+          {/* Single Unified Payment Card (no separate TrxID step) */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-pink-500/25 shadow-2xl backdrop-blur-xl space-y-6">
+
+            {error && (
+              <div className="p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/40 text-xs text-rose-200 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{error}</span>
               </div>
+            )}
+
+            <div className="flex items-baseline justify-between pb-4 border-b border-white/10">
+              <span className="text-sm font-bold text-[#F5F3FA]">{bn(planName)} প্যাকেজ (৩০ দিন)</span>
+              <span className="text-2xl font-extrabold text-[#F5B942] font-serif">৳ {planAmount}</span>
             </div>
 
-            {/* BKash Official Number Card */}
-            <div className="p-4 rounded-2xl bg-[#150E2B] border border-pink-500/30 space-y-2">
-              <span className="text-xs font-semibold text-[#8B7FA8] block">আমাদের বিকাশ নম্বর (Send Money):</span>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-lg sm:text-xl font-mono font-bold text-pink-400 tracking-wider">
-                  {bkashNumber}
-                </span>
-                <button
-                  type="button"
-                  onClick={copyBkashNumber}
-                  className="px-3 py-1.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 text-xs font-semibold border border-pink-500/30 flex items-center gap-1 transition-all cursor-pointer"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  কপি করুন
-                </button>
+            <form onSubmit={handleSubmitPayment} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-[#F5F3FA] mb-2">
+                  আপনি কোন বিকাশ নম্বর থেকে টাকা পাঠাচ্ছেন?
+                </label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 text-pink-400 absolute left-3.5 top-3.5" />
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={11}
+                    placeholder="01XXXXXXXXX"
+                    value={bKashSender}
+                    onChange={(e) => setBKashSender(e.target.value)}
+                    autoComplete="off"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-sm focus:border-pink-500 outline-none"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Steps */}
-            <div className="space-y-3 text-xs text-[#B9AFD1]">
-              <span className="font-bold text-[#F5F3FA] block text-sm">পেমেন্ট করার নিয়মাবলী:</span>
-              <ol className="list-decimal list-inside space-y-2 text-[#B9AFD1]">
-                <li>আপনার বিকাশ অ্যাপে ঢুকুন অথবা *247# ডায়াল করুন।</li>
-                <li><strong>Send Money</strong> অপশনটি বেছে নিন।</li>
-                <li>উপরের বিকাশ নম্বরে <strong>৳ {planAmount}</strong> টাকা পাঠান।</li>
-                <li>লেনদেন সফল হলে ফিরতি মেসেজ থেকে <strong>TrxID</strong> কপি করুন।</li>
-                <li>ডানপাশের ফর্মে আপনার বিকাশ নম্বর ও TrxID লিখে সাবমিট করুন।</li>
+              <ol className="space-y-3">
+                <li className="flex items-start gap-3 text-xs text-[#B9AFD1]">
+                  <span className="w-6 h-6 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-300 text-[11px] font-bold flex items-center justify-center shrink-0">১</span>
+                  <span className="pt-0.5"><strong className="text-[#F5F3FA]">"Send Money"</strong> অপশনে ক্লিক করুন।</span>
+                </li>
+                <li className="flex items-start gap-3 text-xs text-[#B9AFD1]">
+                  <span className="w-6 h-6 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-300 text-[11px] font-bold flex items-center justify-center shrink-0">২</span>
+                  <span className="pt-0.5 flex items-center gap-2 flex-wrap">
+                    <span>প্রাপক নম্বর হিসেবে এই নম্বরটি লিখুনঃ</span>
+                    <span className="inline-flex items-center gap-1.5 font-mono font-bold text-pink-300 tracking-wider">
+                      {bkashNumber}
+                      <button
+                        type="button"
+                        onClick={copyBkashNumber}
+                        className="p-1 rounded-md bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/30 cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </span>
+                  </span>
+                </li>
+                <li className="flex items-start gap-3 text-xs text-[#B9AFD1]">
+                  <span className="w-6 h-6 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-300 text-[11px] font-bold flex items-center justify-center shrink-0">৩</span>
+                  <span className="pt-0.5">টাকার পরিমাণঃ <strong className="text-[#F5B942]">৳{planAmount}</strong></span>
+                </li>
+                <li className="flex items-start gap-3 text-xs text-[#B9AFD1]">
+                  <span className="w-6 h-6 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-300 text-[11px] font-bold flex items-center justify-center shrink-0">৪</span>
+                  <span className="pt-0.5">নিশ্চিত করতে নিচের বাটনে ক্লিক করুন।</span>
+                </li>
               </ol>
-            </div>
 
-            {/* Stripe Alternative if enabled */}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {submitting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span>টাকা পাঠানো হয়েছে</span>
+                )}
+              </button>
+            </form>
+
             {stripeEnabled && (
-              <div className="pt-4 border-t border-white/10">
-                <div className="p-3.5 rounded-2xl bg-[#150E2B]/80 border border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="pt-2 border-t border-white/10">
+                <div className="p-3.5 mt-4 rounded-2xl bg-[#150E2B]/80 border border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <span className="text-xs font-bold text-[#F5F3FA] block">কার্ড দিয়ে তাৎক্ষণিক পরিশোধ চান?</span>
+                    <span className="text-xs font-bold text-[#F5F3FA] block">কার্ড দিয়ে তাৎক্ষণিক পরিশোধ চান?</span>
                     <span className="text-[11px] text-[#8B7FA8]">ভিসা / মাস্টারকার্ডের মাধ্যমে অটো-অ্যাক্টিভেশন</span>
                   </div>
                   <button
@@ -292,73 +321,8 @@ function PaymentContent() {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Right Column: Submission Form (Md 6 cols) */}
-          <div className="md:col-span-6 p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-pink-500/25 shadow-2xl backdrop-blur-xl">
-            <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
-              <CheckCircle2 className="w-5 h-5 text-pink-400" />
-              <span>বিকাশ পেমেন্ট তথ্য প্রদান করুন</span>
-            </h3>
-
-            {error && (
-              <div className="mb-4 p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/40 text-xs text-rose-200 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmitPayment} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  যে নম্বর থেকে বিকাশ করেছেন (Sender Number)
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-pink-400 absolute left-3.5 top-3" />
-                  <input
-                    type="tel"
-                    placeholder="01XXXXXXXXX"
-                    value={bKashSender}
-                    onChange={(e) => setBKashSender(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-pink-500 outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  বিকাশ ট্রানজেকশন আইডি (TrxID)
-                </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: BL83K921MN"
-                  value={trxId}
-                  onChange={(e) => setTrxId(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs font-mono tracking-widest focus:border-pink-500 uppercase outline-none"
-                  required
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-3.5 px-4 rounded-xl font-bold text-xs bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span>পেমেন্ট নিশ্চিত করুন</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-6 pt-4 border-t border-white/10 text-center text-xs text-[#8B7FA8] flex items-center justify-center gap-1.5">
+            <div className="pt-2 text-center text-xs text-[#8B7FA8] flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>১০০% নিরাপদ ও সুরক্ষিত বিকাশ পেমেন্ট</span>
             </div>

@@ -30,7 +30,6 @@ function SearchContent() {
   const [children, setChildren] = useState<string>(searchParams.get('children') || 'All');
   const [premiumOnly, setPremiumOnly] = useState<boolean>(searchParams.get('premium') === 'premium');
   const [ageMin, setAgeMin] = useState<number>(Number(searchParams.get('ageMin')) || 18);
-  const [ageMax, setAgeMax] = useState<number>(Number(searchParams.get('ageMax')) || 55);
   const [sort, setSort] = useState<string>(searchParams.get('sort') || 'newest');
 
   // Effective Gender
@@ -62,7 +61,6 @@ function SearchContent() {
         if (children !== 'All') q.set('children', children);
         if (premiumOnly) q.set('premium', 'premium');
         q.set('ageMin', ageMin.toString());
-        q.set('ageMax', ageMax.toString());
         q.set('sort', sort);
 
         const res = await fetch(`/api/profiles?${q.toString()}`);
@@ -82,7 +80,7 @@ function SearchContent() {
     return () => {
       isMounted = false;
     };
-  }, [user, effectiveGender, district, maritalStatus, religion, education, prayerFrequency, children, premiumOnly, ageMin, ageMax, sort]);
+  }, [user, effectiveGender, district, maritalStatus, religion, education, prayerFrequency, children, premiumOnly, ageMin, sort]);
 
   const resetFilters = () => {
     setDistrict('All');
@@ -93,7 +91,6 @@ function SearchContent() {
     setChildren('All');
     setPremiumOnly(false);
     setAgeMin(18);
-    setAgeMax(55);
     setSort('newest');
   };
 
@@ -186,32 +183,19 @@ function SearchContent() {
               </div>
             )}
 
-            {/* Age Range */}
+            {/* Minimum Age (no upper cap) */}
             <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-[#B9AFD1] mb-2">
-                <span>বয়স সীমা</span>
-                <span className="text-[#F5B942] font-bold">{ageMin} - {ageMax} বছর</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  min="18"
-                  max="60"
-                  value={ageMin}
-                  onChange={(e) => setAgeMin(Number(e.target.value))}
-                  className="px-2.5 py-1.5 rounded-lg bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs text-center focus:border-[#FF4D7E]"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  min="18"
-                  max="65"
-                  value={ageMax}
-                  onChange={(e) => setAgeMax(Number(e.target.value))}
-                  className="px-2.5 py-1.5 rounded-lg bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs text-center focus:border-[#FF4D7E]"
-                  placeholder="Max"
-                />
-              </div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ন্যূনতম বয়স</label>
+              <select
+                value={ageMin}
+                onChange={(e) => setAgeMin(Number(e.target.value))}
+                autoComplete="off"
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                {Array.from({ length: 43 }, (_, i) => 18 + i).map((age) => (
+                  <option key={age} value={age}>{age}+ বছর</option>
+                ))}
+              </select>
             </div>
 
             {/* District */}
@@ -241,7 +225,9 @@ function SearchContent() {
                 <option value="Never Married">অবিবাহিত</option>
                 <option value="Divorced">ডিভোর্সড</option>
                 <option value="Widowed">বিধবা / বিপত্নীক</option>
-                <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহ)</option>
+                {effectiveGender !== 'Female' && (
+                  <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহ)</option>
+                )}
               </select>
             </div>
 
@@ -377,23 +363,17 @@ function SearchContent() {
 
             {/* Age */}
             <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">বয়স সীমা ({ageMin} - {ageMax})</label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  value={ageMin}
-                  onChange={(e) => setAgeMin(Number(e.target.value))}
-                  className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] text-center"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  value={ageMax}
-                  onChange={(e) => setAgeMax(Number(e.target.value))}
-                  className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] text-center"
-                  placeholder="Max"
-                />
-              </div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ন্যূনতম বয়স ({ageMin}+)</label>
+              <select
+                value={ageMin}
+                onChange={(e) => setAgeMin(Number(e.target.value))}
+                autoComplete="off"
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA]"
+              >
+                {Array.from({ length: 43 }, (_, i) => 18 + i).map((age) => (
+                  <option key={age} value={age}>{age}+ বছর</option>
+                ))}
+              </select>
             </div>
 
             {/* District */}

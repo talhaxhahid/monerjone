@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -25,10 +24,7 @@ export async function GET() {
     }
 
     const visits = await prisma.visit.findMany({
-      where: {
-        targetId: me.id,
-        visitor: { active: true },
-      },
+      where: { targetId: me.id },
       include: {
         visitor: {
           include: {
@@ -54,9 +50,8 @@ export async function GET() {
 
     const profiles = uniqueVisitors.map((v) => {
       const u = v.visitor;
-      if (!u) return null;
       const age = calculateAge(u.dob);
-      const photoIds: string[] = (u.photos || []).map((p: { id: string }) => p.id);
+      const photoIds = (u.photos || []).map((p: { id: string }) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency });
 
@@ -86,7 +81,7 @@ export async function GET() {
         matchScore,
         visitedAt: v.createdAt.toISOString(),
       };
-    }).filter(Boolean);
+    });
 
     return NextResponse.json({
       count,

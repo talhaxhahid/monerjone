@@ -24,6 +24,8 @@ export default function SignupPage() {
     password: '',
   });
 
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobYear, setDobYear] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -98,15 +100,15 @@ export default function SignupPage() {
           <div className="relative z-10 space-y-5 my-auto py-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF4D7E]/20 text-[#FF4D7E] text-xs font-semibold border border-[#FF4D7E]/30 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-[#F5B942]" />
-              <span>বিনামূল্যে বায়োডাটা রেজিস্ট্রেশন</span>
+              <span>বিনামূল্যে বায়োডাটা রেজিস্ট্রেশন</span>
             </div>
 
             <h2 className="text-2xl font-bold text-[#F5F3FA] leading-snug font-serif">
-              আজই তৈরি করুন আপনার শরীয়াহ সম্মত বিয়ের বায়োডাটা
+              উদ্দেশ্য নিয়ে আপনার খোঁজ শুরু করুন
             </h2>
 
             <p className="text-xs text-[#B9AFD1] leading-relaxed">
-              MonerJone প্ল্যাটফর্মে অ্যাকাউন্ট খুলে সম্পূর্ণ বিশ্বস্ত পরিবেশে দ্বীনদার পাত্র বা পাত্রীর সন্ধান পান।
+              বিশ্বাস, ভেরিফিকেশন ও অভিন্ন মূল্যবোধের উপর গড়া একটি কমিউনিটিতে যোগ দিন — বিনামূল্যে প্রোফাইল তৈরি করুন।
             </p>
 
             {/* Registration Benefits List */}
@@ -153,11 +155,14 @@ export default function SignupPage() {
           {/* Desktop Heading */}
           <div className="hidden lg:block mb-6">
             <h1 className="text-2xl font-bold text-[#F5F3FA] font-serif flex items-center gap-2">
-              <span>ফ্রি অ্যাকাউন্ট নিবন্ধন</span>
+              <span>অ্যাকাউন্ট তৈরি করুন</span>
               <Heart className="w-5 h-5 text-[#FF4D7E] fill-[#FF4D7E]" />
             </h1>
-            <p className="text-xs text-[#B9AFD1] mt-1">
-              সঠিক তথ্য প্রদান করে কয়েক মিনিটে আপনার বায়োডাটা প্রোফাইল তৈরি করুন
+            <p className="text-xs text-[#B9AFD1] mt-2">
+              ইতিমধ্যে সদস্য?{' '}
+              <Link href="/login" className="font-bold text-[#FF4D7E] hover:text-[#FF4D7E]/80">
+                লগ ইন করুন
+              </Link>
             </p>
           </div>
 
@@ -167,7 +172,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="notranslate space-y-4" translate="no">
             
             {/* Gender Selection */}
             <div>
@@ -240,19 +245,58 @@ export default function SignupPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  জন্ম তারিখ
+                  জন্ম তারিখ (মাস ও বছর)
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8B7FA8]">
-                    <Calendar className="w-4 h-4 text-[#F5B942]" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8B7FA8]">
+                      <Calendar className="w-4 h-4 text-[#F5B942]" />
+                    </div>
+                    <select
+                      value={dobMonth}
+                      onChange={(e) => {
+                        const m = e.target.value;
+                        setDobMonth(m);
+                        if (dobYear && m) {
+                          setFormData((prev) => ({ ...prev, dob: `${dobYear}-${m.padStart(2, '0')}-01` }));
+                        } else if (!m) {
+                          setFormData((prev) => ({ ...prev, dob: '' }));
+                        }
+                      }}
+                      autoComplete="off"
+                      className="w-full pl-10 pr-2 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors appearance-none"
+                      required
+                    >
+                      <option value="" disabled>মাস</option>
+                      {[
+                        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+                        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+                      ].map((name, idx) => (
+                        <option key={idx + 1} value={idx + 1}>{name}</option>
+                      ))}
+                    </select>
                   </div>
-                  <input
-                    type="date"
-                    value={formData.dob}
-                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
+
+                  <select
+                    value={dobYear}
+                    onChange={(e) => {
+                      const y = e.target.value;
+                      setDobYear(y);
+                      if (y && dobMonth) {
+                        setFormData((prev) => ({ ...prev, dob: `${y}-${dobMonth.padStart(2, '0')}-01` }));
+                      } else if (!y) {
+                        setFormData((prev) => ({ ...prev, dob: '' }));
+                      }
+                    }}
+                    autoComplete="off"
+                    className="w-full px-2 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors appearance-none"
                     required
-                  />
+                  >
+                    <option value="" disabled>বছর</option>
+                    {Array.from({ length: 82 }, (_, i) => new Date().getFullYear() - 18 - i).map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

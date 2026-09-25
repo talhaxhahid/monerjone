@@ -15,14 +15,12 @@ import {
   UserCheck,
   Lock,
   Phone,
-  Search,
-  User as UserIcon,
-  CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 import { bn } from '@/lib/utils';
 import ProfileCard from '@/components/profiles/ProfileCard';
 import UpgradeModal from '@/components/ui/UpgradeModal';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 import { ProfileCardData } from '@/types';
 
 export default function DashboardPage() {
@@ -31,14 +29,16 @@ export default function DashboardPage() {
 
   const [myProfile, setMyProfile] = useState<any>(null);
   const [visitorCount, setVisitorCount] = useState<number>(0);
+  const [visitorProfiles, setVisitorProfiles] = useState<ProfileCardData[]>([]);
+  const [visitorsLocked, setVisitorsLocked] = useState<boolean>(true);
   const [favoritesCount, setFavoritesCount] = useState<number>(0);
   const [favoritedByCount, setFavoritedByCount] = useState<number>(0);
+  const [favoritedByProfiles, setFavoritedByProfiles] = useState<ProfileCardData[]>([]);
   const [phoneUnlockStats, setPhoneUnlockStats] = useState<{ limit: number; used: number; remaining: number }>({
     limit: 0,
     used: 0,
     remaining: 0,
   });
-  const [recommended, setRecommended] = useState<ProfileCardData[]>([]);
   const [loadingData, setLoadingData] = useState<boolean>(true);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState<boolean>(false);
 
@@ -59,11 +59,13 @@ export default function DashboardPage() {
           setMyProfile(profData.profile);
         }
 
-        // 2. Load visitor count
+        // 2. Load visitor count & (Platinum-only) visitor profiles
         const visitRes = await fetch('/api/social/visits');
         if (visitRes.ok) {
           const visitData = await visitRes.json();
           setVisitorCount(visitData.count || 0);
+          setVisitorProfiles(visitData.profiles || []);
+          setVisitorsLocked(visitData.isPlatinum === false);
         }
 
         // 3. Load favorites
@@ -78,6 +80,7 @@ export default function DashboardPage() {
         if (favByRes.ok) {
           const favByData = await favByRes.json();
           setFavoritedByCount(favByData.profiles?.length || 0);
+          setFavoritedByProfiles(favByData.profiles || []);
         }
 
         // 4. Load phone unlock quota
@@ -89,13 +92,6 @@ export default function DashboardPage() {
             used: unlockData.used || 0,
             remaining: unlockData.remaining || 0,
           });
-        }
-
-        // 5. Load recommended matches
-        const recRes = await fetch('/api/profiles?sort=active');
-        if (recRes.ok) {
-          const recData = await recRes.json();
-          setRecommended(recData.profiles.slice(0, 6));
         }
       } catch (err) {
         console.error('Error loading dashboard data:', err);
@@ -143,11 +139,22 @@ export default function DashboardPage() {
       {/* ================= 1. WELCOME & PLAN HERO CARD ================= */}
       <div className="rounded-3xl bg-gradient-to-r from-[#1F1640] via-[#1F1640]/95 to-[#331A5C] border border-[#FF4D7E]/25 p-5 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         
-        {/* Left: Monogram & Greeting */}
+        {/* Left: Photo/Monogram & Greeting */}
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] p-0.5 shadow-lg shadow-[#FF4D7E]/25 shrink-0">
-            <div className="w-full h-full rounded-[14px] bg-[#150E2B] flex items-center justify-center text-xl sm:text-2xl font-bold text-[#F5B942]">
-              {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
+            <div className="w-full h-full rounded-[14px] overflow-hidden bg-[#150E2B] flex items-center justify-center text-xl sm:text-2xl font-bold text-[#F5B942]">
+              {myProfile?.photos?.length > 0 ? (
+                <ImageWithFallback
+                  src={`/api/photos/${myProfile.photos[0].id}`}
+                  alt={user.firstName}
+                  name={user.firstName}
+                  gender={user.gender}
+                  fallbackType="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user.firstName ? user.firstName[0].toUpperCase() : 'U'
+              )}
             </div>
           </div>
 
@@ -192,6 +199,25 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ================= NO-PHOTO WARNING (profile can't go live without at least 1 photo) ================= */}
+      {!loadingData && myProfile && (!myProfile.photos || myProfile.photos.length === 0) && (
+        <Link
+          href="/profile/edit"
+          className="flex items-center gap-3 p-4 sm:p-5 rounded-2xl bg-rose-950/60 border border-rose-500/40 hover:border-rose-400/70 transition-all group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-300 shrink-0">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs sm:text-sm font-bold text-rose-200">আপনার বায়োডাটায় কোনো ছবি যুক্ত করা হয়নি</p>
+            <p className="text-[11px] sm:text-xs text-rose-300/80 mt-0.5">
+              অন্তত ১টি ছবি ছাড়া আপনার প্রোফাইল লাইভ হবে না এবং অন্যরা খুঁজে পাবে না। এখনই ছবি যুক্ত করুন।
+            </p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-rose-300 group-hover:translate-x-1 transition-transform shrink-0" />
+        </Link>
+      )}
 
       {/* ================= 2. 4-METRIC STATS GRID (RESPONSIVE 2X2 ON MOBILE) ================= */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
@@ -287,47 +313,6 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* ================= 3. QUICK ACTION SHORTCUT HUB (MOBILE FRIENDLY) ================= */}
-      <div className="p-4 sm:p-6 rounded-3xl bg-[#1F1640]/70 border border-white/10 shadow-lg space-y-3">
-        <span className="text-xs font-bold text-[#8B7FA8] uppercase tracking-wider block">
-          দ্রুত অ্যাকশন ও শর্টকাট
-        </span>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
-          <Link
-            href="/search"
-            className="p-3 sm:p-4 rounded-2xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/50 flex items-center gap-2.5 transition-all text-xs font-semibold text-[#F5F3FA] hover:text-[#FF4D7E]"
-          >
-            <Search className="w-4 h-4 text-[#F5B942] shrink-0" />
-            <span className="truncate">পাত্র-পাত্রী সার্চ</span>
-          </Link>
-
-          <Link
-            href={`/profile/${user.id}`}
-            className="p-3 sm:p-4 rounded-2xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/50 flex items-center gap-2.5 transition-all text-xs font-semibold text-[#F5F3FA] hover:text-[#FF4D7E]"
-          >
-            <UserIcon className="w-4 h-4 text-[#FF4D7E] shrink-0" />
-            <span className="truncate">আমার বায়োডাটা</span>
-          </Link>
-
-          <Link
-            href="/profile/edit"
-            className="p-3 sm:p-4 rounded-2xl bg-[#150E2B] border border-white/10 hover:border-[#FF4D7E]/50 flex items-center gap-2.5 transition-all text-xs font-semibold text-[#F5F3FA] hover:text-[#FF4D7E]"
-          >
-            <Edit3 className="w-4 h-4 text-[#F5B942] shrink-0" />
-            <span className="truncate">বায়োডাটা এডিট</span>
-          </Link>
-
-          <Link
-            href="/pricing"
-            className="p-3 sm:p-4 rounded-2xl bg-[#150E2B] border border-white/10 hover:border-[#F5B942]/50 flex items-center gap-2.5 transition-all text-xs font-semibold text-[#F5F3FA] hover:text-[#F5B942]"
-          >
-            <Crown className="w-4 h-4 text-[#F5B942] shrink-0" />
-            <span className="truncate">মেম্বারশিপ প্যাকেজ</span>
-          </Link>
-        </div>
-      </div>
-
       {/* ================= 4. PROFILE COMPLETION PROGRESS BAR ================= */}
       <div className="p-5 sm:p-6 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -358,23 +343,23 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ================= 5. RECOMMENDED MATCHES SECTION ================= */}
+      {/* ================= 5. যারা আপনাকে পছন্দ করেছেন (FAVORITED ME) ================= */}
       <div className="space-y-4 sm:space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg sm:text-2xl font-bold text-[#F5F3FA] font-serif flex items-center gap-2">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF4D7E]" />
-              <span>আপনার জন্য প্রস্তাবিত ম্যাচ</span>
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF4D7E] fill-[#FF4D7E]/20" />
+              <span>যারা আপনাকে পছন্দ করেছেন</span>
             </h2>
             <p className="text-xs text-[#B9AFD1] mt-0.5">
-              আপনার বয়স, অবস্থান ও ধর্মীয় পছন্দের ভিত্তিতে বাছাইকৃত প্রোফাইল
+              এই ব্যবহারকারীরা আপনার বায়োডাটা পছন্দের তালিকায় যুক্ত করেছেন
             </p>
           </div>
           <Link
-            href="/search"
+            href="/favorites"
             className="text-xs font-semibold text-[#FF4D7E] hover:text-[#FF4D7E]/80 flex items-center gap-1 shrink-0"
           >
-            <span>সব দেখুন</span>
+            <span>সব দেখুন ({favoritedByCount})</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -385,21 +370,60 @@ export default function DashboardPage() {
               <div key={i} className="h-96 rounded-3xl bg-[#1F1640]/60 border border-white/10 animate-pulse" />
             ))}
           </div>
-        ) : recommended.length > 0 ? (
+        ) : favoritedByProfiles.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommended.map((p) => (
+            {favoritedByProfiles.slice(0, 3).map((p) => (
               <ProfileCard key={p.id} profile={p} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-[#1F1640]/40 rounded-3xl border border-white/10 space-y-3">
-            <p className="text-xs text-[#B9AFD1]">এই মুহূর্তে কোনো প্রস্তাবিত প্রোফাইল নেই</p>
-            <Link
-              href="/search"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#FF4D7E] text-white"
+          <div className="text-center py-10 bg-[#1F1640]/40 rounded-3xl border border-white/10 space-y-2">
+            <p className="text-xs text-[#B9AFD1]">এখনও কেউ আপনাকে পছন্দের তালিকায় যুক্ত করেননি</p>
+          </div>
+        )}
+      </div>
+
+      {/* ================= 6. যারা আপনার প্রোফাইল দেখেছেন (PROFILE VIEWERS) ================= */}
+      <div className="space-y-4 sm:space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg sm:text-2xl font-bold text-[#F5F3FA] font-serif flex items-center gap-2">
+              <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-[#F5B942]" />
+              <span>যারা আপনার প্রোফাইল দেখেছেন</span>
+            </h2>
+            <p className="text-xs text-[#B9AFD1] mt-0.5">সর্বমোট {visitorCount} বার আপনার বায়োডাটা দেখা হয়েছে</p>
+          </div>
+        </div>
+
+        {loadingData ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-96 rounded-3xl bg-[#1F1640]/60 border border-white/10 animate-pulse" />
+            ))}
+          </div>
+        ) : visitorsLocked ? (
+          <div className="text-center py-10 px-6 bg-[#1F1640]/40 rounded-3xl border border-[#F5B942]/20 space-y-3">
+            <Lock className="w-6 h-6 text-[#F5B942] mx-auto" />
+            <p className="text-xs text-[#B9AFD1]">
+              কে কে আপনার প্রোফাইল ভিউ করেছেন তাদের পূর্ণাঙ্গ তালিকা দেখতে প্লাটিনাম মেম্বারশিপে আপগ্রেড করুন
+            </p>
+            <button
+              onClick={() => setUpgradeModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#F5B942] text-[#291704]"
             >
-              পাত্র-পাত্রী সার্চ করুন
-            </Link>
+              <Crown className="w-3.5 h-3.5" />
+              আপগ্রেড করুন
+            </button>
+          </div>
+        ) : visitorProfiles.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visitorProfiles.slice(0, 3).map((p) => (
+              <ProfileCard key={p.id} profile={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10 bg-[#1F1640]/40 rounded-3xl border border-white/10 space-y-2">
+            <p className="text-xs text-[#B9AFD1]">এখনও কেউ আপনার প্রোফাইল দেখেননি</p>
           </div>
         )}
       </div>

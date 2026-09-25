@@ -26,11 +26,28 @@ export default function ImageWithFallback({
 }: ImageWithFallbackProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    setIsLoading(true);
     setHasError(false);
-    if (!src) return;
+    if (!src) {
+      setIsLoading(false);
+      return;
+    }
+
+    // The browser may already have this image cached (or it may have been
+    // painted before React attached the onLoad handler, e.g. during
+    // hydration). In that case `complete` is already true and `onLoad`
+    // will never fire, which used to leave the component stuck on the
+    // loading skeleton/camera icon indefinitely. Check synchronously up
+    // front so already-loaded images show immediately.
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
     // Guard against a stuck loading state (e.g. a slow/hanging network
     // request never firing onLoad or onError) by falling back after 8s.
     const timeout = setTimeout(() => {
@@ -67,6 +84,7 @@ export default function ImageWithFallback({
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
           key={`img-${src}`}
+          ref={imgRef}
           src={src!}
           alt={alt}
           className={`${className} transition-opacity duration-300 ${

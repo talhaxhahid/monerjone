@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { plan, bKashNumber, trxId } = body;
+    const { plan, bKashNumber } = body;
 
     if (!plan || (plan !== 'Gold' && plan !== 'Platinum')) {
       return NextResponse.json({ error: 'সঠিক প্ল্যান নির্বাচন করুন (Gold বা Platinum)' }, { status: 400 });
@@ -42,11 +42,11 @@ export async function POST(request: NextRequest) {
     if (!bKashNumber || bKashNumber.length < 11) {
       return NextResponse.json({ error: 'বিকাশ নম্বর সঠিকভাবে দিন' }, { status: 400 });
     }
-    if (!trxId || trxId.length < 6) {
-      return NextResponse.json({ error: 'বিকাশ TrxID সঠিকভাবে দিন' }, { status: 400 });
-    }
 
     const amount = PLAN_PRICES[plan] || 1350;
+    // No manual TrxID entry required from the member anymore — this is just
+    // an internal record-keeping reference for the payment log.
+    const trxId = `AUTO-${Date.now().toString(36).toUpperCase()}`;
 
     // Instant activation, no admin verification -- trusting the member's
     // own "I've paid" click, matching the original site's behavior. The

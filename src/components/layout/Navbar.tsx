@@ -66,16 +66,6 @@ export default function Navbar() {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2">
             <Link
-              href="/"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
-                pathname === '/'
-                  ? 'text-[#FF4D7E] bg-[#FF4D7E]/10 border border-[#FF4D7E]/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              হোম
-            </Link>
-            <Link
               href="/search"
               className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
                 pathname.startsWith('/search')
@@ -85,17 +75,6 @@ export default function Navbar() {
             >
               <Search className="w-4 h-4 text-[#F5B942]" />
               পাত্র/পাত্রী খুঁজুন
-            </Link>
-            <Link
-              href="/pricing"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
-                pathname.startsWith('/pricing')
-                  ? 'text-[#FF4D7E] bg-[#FF4D7E]/10 border border-[#FF4D7E]/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Crown className="w-4 h-4 text-[#F5B942]" />
-              প্যাকেজসমূহ
             </Link>
 
             {user && (
@@ -299,14 +278,16 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Off-Canvas Hamburger Toggle Button */}
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="md:hidden p-2.5 rounded-xl bg-[#1F1640]/90 text-[#F5F3FA] hover:text-[#FF4D7E] border border-white/10 shadow-md active:scale-95 transition-all cursor-pointer"
-              aria-label="Open mobile menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+            {/* Mobile Off-Canvas Hamburger Toggle Button (hidden on the public home page for logged-out visitors) */}
+            {!(pathname === '/' && !user) && (
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="md:hidden p-2.5 rounded-xl bg-[#1F1640]/90 text-[#F5F3FA] hover:text-[#FF4D7E] border border-white/10 shadow-md active:scale-95 transition-all cursor-pointer"
+                aria-label="Open mobile menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -393,7 +374,7 @@ export default function Navbar() {
                 <div className="p-4 rounded-2xl bg-gradient-to-b from-[#1F1640] to-[#150E2B] border border-[#FF4D7E]/30 shadow-xl space-y-3">
                   <div className="text-center space-y-1">
                     <span className="text-[11px] font-semibold text-[#F5B942] uppercase tracking-wider">
-                      MonerJone ইসলামিক ম্যাট্রিমনি
+                      <span className="notranslate" translate="no">MonerJone</span> ইসলামিক ম্যাট্রিমনি
                     </span>
                     <h4 className="text-sm font-bold text-[#F5F3FA]">
                       মনের মতো দ্বীনদার জীবনসঙ্গী খুঁজুন
@@ -635,10 +616,12 @@ export default function Navbar() {
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#8B7FA8]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>১০০% ইসলামিক ও বিশ্বস্ত পাত্র-পাত্রী সন্ধান</span>
-              </div>
+              {!user && (
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#8B7FA8]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>১০০% ইসলামিক ও বিশ্বস্ত পাত্র-পাত্রী সন্ধান</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

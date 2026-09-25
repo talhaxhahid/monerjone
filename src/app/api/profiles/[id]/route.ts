@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateAge, computeMatchScore } from '@/lib/utils';
-import { PHONE_UNLOCK_LIMITS } from '@/lib/security';
+import { PHONE_UNLOCK_LIMITS, DAILY_PROFILE_VIEW_LIMITS } from '@/lib/security';
 
 export async function GET(
   request: NextRequest,
@@ -38,6 +38,36 @@ export async function GET(
     let theyBlockedMe = false;
 
     if (me) {
+      // Enforce the daily biodata-view limit for Free members. Re-opening a
+      // profile already viewed today never counts as a new view, so this
+      // only blocks *new* profiles once the day's quota is used up.
+      if (me.id !== targetUser.id) {
+        const dailyLimit = DAILY_PROFILE_VIEW_LIMITS[me.premium];
+        if (dailyLimit !== null && dailyLimit !== undefined) {
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+
+          const viewedToday = await prisma.visit.findMany({
+            where: { visitorId: me.id, createdAt: { gte: todayStart } },
+            select: { targetId: true },
+            distinct: ['targetId'],
+          });
+          const viewedIds = new Set(viewedToday.map((v) => v.targetId));
+
+          if (!viewedIds.has(targetUser.id) && viewedIds.size >= dailyLimit) {
+            return NextResponse.json(
+              {
+                error: 'DAILY_LIMIT_REACHED',
+                message: `আপনি আজকের ফ্রি সীমা (${dailyLimit}টি বায়োডাটা) দেখে ফেলেছেন। আরও বায়োডাটা দেখতে ও সীমাহীন সুবিধা পেতে আপগ্রেড করুন।`,
+                limit: dailyLimit,
+                used: viewedIds.size,
+              },
+              { status: 403 }
+            );
+          }
+        }
+      }
+
       // Record visit if visitor is not viewing own profile
       if (me.id !== targetUser.id) {
         await prisma.visit.create({

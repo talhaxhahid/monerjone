@@ -296,7 +296,8 @@ export default function ProfileEditWizardPage() {
       {/* Wizard Content Card with Key */}
       <div
         key={`wizard-card-step-${step}`}
-        className="p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-2xl backdrop-blur-xl"
+        className="notranslate p-6 sm:p-8 rounded-3xl bg-[#1F1640]/90 border border-[#FF4D7E]/20 shadow-2xl backdrop-blur-xl"
+        translate="no"
       >
         
         {/* ================= STEP 1 ================= */}
@@ -424,6 +425,7 @@ export default function ProfileEditWizardPage() {
                   min="0"
                   value={formData.brothers ?? 0}
                   onChange={(e) => setFormData({ ...formData, brothers: parseInt(e.target.value, 10) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -437,6 +439,7 @@ export default function ProfileEditWizardPage() {
                   min="0"
                   value={formData.sisters ?? 0}
                   onChange={(e) => setFormData({ ...formData, sisters: parseInt(e.target.value, 10) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -845,26 +848,30 @@ export default function ProfileEditWizardPage() {
                     <span>প্রত্যাশিত বয়স সীমা ({formData.prefAgeMin ?? 18} - {formData.prefAgeMax ?? 35} বছর)</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
+                    <select
                       value={formData.prefAgeMin ?? 18}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        setFormData((prev: any) => ({ ...prev, prefAgeMin: isNaN(val) ? '' : val }));
-                      }}
+                      onChange={(e) =>
+                        setFormData((prev: any) => ({ ...prev, prefAgeMin: Number(e.target.value) }))
+                      }
+                      autoComplete="off"
                       className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-center text-[#F5F3FA]"
-                      placeholder="Min"
-                    />
-                    <input
-                      type="number"
+                    >
+                      {Array.from({ length: 63 }, (_, i) => 18 + i).map((age) => (
+                        <option key={`pref-min-${age}`} value={age}>{age}</option>
+                      ))}
+                    </select>
+                    <select
                       value={formData.prefAgeMax ?? 35}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        setFormData((prev: any) => ({ ...prev, prefAgeMax: isNaN(val) ? '' : val }));
-                      }}
+                      onChange={(e) =>
+                        setFormData((prev: any) => ({ ...prev, prefAgeMax: Number(e.target.value) }))
+                      }
+                      autoComplete="off"
                       className="px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-center text-[#F5F3FA]"
-                      placeholder="Max"
-                    />
+                    >
+                      {Array.from({ length: 63 }, (_, i) => 18 + i).map((age) => (
+                        <option key={`pref-max-${age}`} value={age}>{age}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -933,7 +940,7 @@ export default function ProfileEditWizardPage() {
         )}
 
         {/* Wizard Footer Navigation Controls */}
-        <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between gap-3">
+        <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
           {step > 1 ? (
             <button
               key="btn-nav-prev"
@@ -945,7 +952,16 @@ export default function ProfileEditWizardPage() {
               <span>পূর্ববর্তী ধাপ</span>
             </button>
           ) : (
-            <div key="spacer-nav-prev" />
+            <button
+              key="spacer-nav-prev"
+              type="button"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="invisible px-5 py-2.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 pointer-events-none"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>পূর্ববর্তী ধাপ</span>
+            </button>
           )}
 
           <div className="flex items-center gap-2">

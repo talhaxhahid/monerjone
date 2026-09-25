@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -19,10 +18,7 @@ export async function GET(request: NextRequest) {
 
     const favs = isReceived
       ? await prisma.favorite.findMany({
-          where: {
-            targetId: me.id,
-            user: { active: true },
-          },
+          where: { targetId: me.id },
           include: {
             user: {
               include: {
@@ -37,10 +33,7 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'desc' },
         })
       : await prisma.favorite.findMany({
-          where: {
-            userId: me.id,
-            target: { active: true },
-          },
+          where: { userId: me.id },
           include: {
             target: {
               include: {
@@ -68,9 +61,8 @@ export async function GET(request: NextRequest) {
 
     const profiles = favs.map((f: any) => {
       const u = isReceived ? f.user : f.target;
-      if (!u) return null;
       const age = calculateAge(u.dob);
-      const photoIds: string[] = (u.photos || []).map((p: { id: string }) => p.id);
+      const photoIds = (u.photos || []).map((p: { id: string }) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency });
 
@@ -101,7 +93,7 @@ export async function GET(request: NextRequest) {
         matchScore,
         createdAt: u.createdAt.toISOString(),
       };
-    }).filter(Boolean);
+    });
 
     return NextResponse.json({ profiles });
   } catch (error: any) {

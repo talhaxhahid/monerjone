@@ -5,8 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 
 const PLAN_LABEL_BN: Record<string, string> = {
-  Gold: 'গোল্ড',
-  Platinum: 'প্লাটিনাম',
+  Gold: 'রূপা',
+  Platinum: 'গোল্ড',
 };
 
 // Membership auto-downgrades to Free after 30 days (see src/lib/auth.ts).

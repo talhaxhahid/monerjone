@@ -9,7 +9,6 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
-  Sparkles,
   CheckCircle2,
   Crown
 } from 'lucide-react';
@@ -104,7 +103,7 @@ export default function ProfileCard({
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#1F1640] via-transparent to-black/30 pointer-events-none" />
 
-        {/* 1. TOP-LEFT: Premium Tier Badge OR Match Score Badge */}
+        {/* 1. TOP-LEFT: Premium Tier Badge */}
         {isPlatinum ? (
           <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-indigo-100 via-white to-indigo-200 text-indigo-950 border border-white/80 shadow-lg shadow-indigo-950/40 flex items-center gap-1.5 shimmer-badge">
             <Crown className="w-3.5 h-3.5 text-indigo-700 shrink-0" />
@@ -115,20 +114,7 @@ export default function ProfileCard({
             <Crown className="w-3.5 h-3.5 text-[#291704] shrink-0" />
             <span>গোল্ড মেম্বার</span>
           </div>
-        ) : profile.matchScore ? (
-          <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#150E2B]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
-            <Sparkles className="w-3 h-3 text-emerald-400" />
-            <span>{profile.matchScore}% ম্যাচ</span>
-          </div>
         ) : null}
-
-        {/* 2. BOTTOM-LEFT: Match Score Badge (When user is Premium) */}
-        {isPremium && profile.matchScore && (
-          <div className="absolute bottom-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#150E2B]/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
-            <Sparkles className="w-3 h-3 text-emerald-400" />
-            <span>{profile.matchScore}% ম্যাচ</span>
-          </div>
-        )}
 
         {/* 3. TOP-RIGHT: Online Status & Favorite Button */}
         {profile.active && (
@@ -227,14 +213,14 @@ export default function ProfileCard({
         <div className="pt-2 grid grid-cols-2 gap-2 border-t border-white/10">
           <Link
             href={`/profile/${profile.id}`}
-            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#331A5C] hover:bg-[#4B2380] text-[#F5F3FA] border border-white/10 hover:border-[#FF4D7E]/50 transition-all duration-200"
+            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#150E2B] hover:border-[#FF4D7E]/60 text-[#F5F3FA] border border-white/10 transition-all duration-200"
           >
             বায়োডাটা দেখুন
           </Link>
           <Link
             href={`/inbox?to=${profile.id}`}
             onClick={handleMessageClick}
-            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#FF4D7E] hover:bg-[#E63465] text-white font-bold shadow-md shadow-[#FF4D7E]/25 flex items-center justify-center gap-1.5 transition-all duration-200"
+            className="w-full py-2.5 px-3 rounded-xl text-xs font-bold text-center bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-md shadow-[#FF4D7E]/25 flex items-center justify-center gap-1.5 transition-all duration-200"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             মেসেজ দিন

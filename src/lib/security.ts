@@ -9,6 +9,14 @@ export const PHONE_UNLOCK_LIMITS: Record<string, number> = {
   Platinum: 10,
 };
 
+// How many distinct biodatas a member may open per day. `null` means
+// unlimited (সীমাহীন) — Gold and Platinum members have no daily cap.
+export const DAILY_PROFILE_VIEW_LIMITS: Record<string, number | null> = {
+  Free: 15,
+  Gold: null,
+  Platinum: null,
+};
+
 export const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
