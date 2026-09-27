@@ -165,15 +165,17 @@ export default function BrandLogo({
         </svg>
       </div>
 
-      <div className="flex flex-col justify-center">
+      <div className="flex flex-col">
         <div
-          className={`notranslate tracking-tight flex items-center md:font-bold md:[font-family:var(--font-display)] ${textSizes[size]}`}
-          style={{ fontWeight: 700 }}
+          className={`notranslate font-bold tracking-tight font-serif flex items-center ${textSizes[size]}`}
           translate="no"
         >
           <span className="text-[#F5F3FA]">Moner</span>
           <span className="text-[#FF4D7E] ml-1">Jone</span>
         </div>
+        <span className="text-[9px] text-[#B9AFD1] tracking-widest uppercase -mt-0.5 font-medium font-sans">
+          Marriage Media
+        </span>
       </div>
     </div>
   );

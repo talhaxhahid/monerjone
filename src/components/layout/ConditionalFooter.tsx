@@ -2,23 +2,27 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Footer from './Footer';
 
-// The inbox is a full-screen messenger-style experience on mobile (like
-// FB/Instagram Messenger) -- a marketing footer underneath it doesn't belong
-// there. It still shows on desktop, where there's room for the 2-pane layout
-// plus a footer beneath it.
+// The footer is hidden entirely on the guest landing page (it's a single-
+// screen splash with no scrolling), and hidden on mobile everywhere else —
+// the inbox is a full-screen messenger-style experience on mobile (like
+// FB/Instagram Messenger) where a marketing footer doesn't belong, and on
+// other pages mobile users get a cleaner, shorter page. It still shows on
+// desktop, where there's room for it beneath the main content.
 export default function ConditionalFooter() {
   const pathname = usePathname();
-  const isMobileFullScreenPage = pathname === '/inbox';
+  const { user } = useAuth();
 
-  if (isMobileFullScreenPage) {
-    return (
-      <div className="hidden md:block">
-        <Footer />
-      </div>
-    );
+  const isGuestLandingPage = pathname === '/' && !user;
+  if (isGuestLandingPage) {
+    return null;
   }
 
-  return <Footer />;
+  return (
+    <div className="hidden md:block">
+      <Footer />
+    </div>
+  );
 }

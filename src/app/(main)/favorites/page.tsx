@@ -100,7 +100,7 @@ export default function FavoritesPage() {
         >
           <Heart className="w-3.5 h-3.5" />
           আপনার ফেভারিট
-          <span className="text-[10px] opacity-80">({givenProfiles.length})</span>
+          <span className="notranslate text-[10px] opacity-80" translate="no">({givenProfiles.length})</span>
         </button>
         <button
           onClick={() => setTab('received')}
@@ -110,7 +110,7 @@ export default function FavoritesPage() {
         >
           <UserCheck className="w-3.5 h-3.5" />
           যারা আপনাকে ফেভারিট করেছে
-          <span className="text-[10px] opacity-80">({receivedProfiles.length})</span>
+          <span className="notranslate text-[10px] opacity-80" translate="no">({receivedProfiles.length})</span>
         </button>
       </div>
 

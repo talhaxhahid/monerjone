@@ -65,20 +65,19 @@ export default function Navbar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            <Link
-              href="/search"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
-                pathname.startsWith('/search')
-                  ? 'text-[#FF4D7E] bg-[#FF4D7E]/10 border border-[#FF4D7E]/20'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Search className="w-4 h-4 text-[#F5B942]" />
-              পাত্র/পাত্রী খুঁজুন
-            </Link>
-
             {user && (
               <>
+                <Link
+                  href="/search"
+                  className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                    pathname.startsWith('/search')
+                      ? 'text-[#FF4D7E] bg-[#FF4D7E]/10 border border-[#FF4D7E]/20'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Search className="w-4 h-4 text-[#F5B942]" />
+                  পাত্র/পাত্রী খুঁজুন
+                </Link>
                 <Link
                   href="/dashboard"
                   className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
@@ -278,8 +277,8 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Off-Canvas Hamburger Toggle Button (hidden on the public home page for logged-out visitors) */}
-            {!(pathname === '/' && !user) && (
+            {/* Mobile Off-Canvas Hamburger Toggle Button (hidden on the public home page and auth pages for logged-out visitors — the sidebar is only for logged-in users) */}
+            {!((pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/signup')) && !user) && (
               <button
                 onClick={() => setMobileSidebarOpen(true)}
                 className="md:hidden p-2.5 rounded-xl bg-[#1F1640]/90 text-[#F5F3FA] hover:text-[#FF4D7E] border border-white/10 shadow-md active:scale-95 transition-all cursor-pointer"
@@ -403,62 +402,64 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Navigation Section 1: Main Routes */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-[#8B7FA8] uppercase tracking-wider px-3 block mb-2">
-                  প্রধান নেভিগেশন
-                </span>
-
-                <Link
-                  href="/"
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    pathname === '/'
-                      ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
-                      : 'text-[#F5F3FA] hover:bg-[#1F1640]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Home className="w-4 h-4 text-[#F5B942]" />
-                    <span>হোম পেইজ</span>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#8B7FA8]" />
-                </Link>
-
-                <Link
-                  href="/search"
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    pathname.startsWith('/search')
-                      ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
-                      : 'text-[#F5F3FA] hover:bg-[#1F1640]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Search className="w-4 h-4 text-[#F5B942]" />
-                    <span>পাত্র-পাত্রী সার্চ</span>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#8B7FA8]" />
-                </Link>
-
-                <Link
-                  href="/pricing"
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    pathname.startsWith('/pricing')
-                      ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
-                      : 'text-[#F5F3FA] hover:bg-[#1F1640]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Crown className="w-4 h-4 text-[#F5B942]" />
-                    <span>মেম্বারশিপ প্যাকেজসমূহ</span>
-                  </div>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F5B942]/20 text-[#F5B942] border border-[#F5B942]/30">
-                    অফার
+              {/* Navigation Section 1: Main Routes (logged-in users only — guests get no menu options) */}
+              {user && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-[#8B7FA8] uppercase tracking-wider px-3 block mb-2">
+                    প্রধান নেভিগেশন
                   </span>
-                </Link>
-              </div>
+
+                  <Link
+                    href="/"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      pathname === '/'
+                        ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
+                        : 'text-[#F5F3FA] hover:bg-[#1F1640]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Home className="w-4 h-4 text-[#F5B942]" />
+                      <span>হোম পেইজ</span>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#8B7FA8]" />
+                  </Link>
+
+                  <Link
+                    href="/search"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      pathname.startsWith('/search')
+                        ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
+                        : 'text-[#F5F3FA] hover:bg-[#1F1640]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Search className="w-4 h-4 text-[#F5B942]" />
+                      <span>পাত্র-পাত্রী সার্চ</span>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#8B7FA8]" />
+                  </Link>
+
+                  <Link
+                    href="/pricing"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      pathname.startsWith('/pricing')
+                        ? 'bg-[#FF4D7E]/15 text-[#FF4D7E] border border-[#FF4D7E]/30 font-bold'
+                        : 'text-[#F5F3FA] hover:bg-[#1F1640]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Crown className="w-4 h-4 text-[#F5B942]" />
+                      <span>মেম্বারশিপ প্যাকেজসমূহ</span>
+                    </div>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F5B942]/20 text-[#F5B942] border border-[#F5B942]/30">
+                      অফার
+                    </span>
+                  </Link>
+                </div>
+              )}
 
               {/* Navigation Section 2: Account Features (if logged in) */}
               {user && (

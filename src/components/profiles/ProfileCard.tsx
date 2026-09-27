@@ -213,7 +213,7 @@ export default function ProfileCard({
         <div className="pt-2 grid grid-cols-2 gap-2 border-t border-white/10">
           <Link
             href={`/profile/${profile.id}`}
-            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#150E2B] hover:border-[#FF4D7E]/60 text-[#F5F3FA] border border-white/10 transition-all duration-200"
+            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#F5B942]/10 hover:bg-[#F5B942]/20 text-[#F5B942] border border-[#F5B942]/30 hover:border-[#F5B942]/60 transition-all duration-200"
           >
             বায়োডাটা দেখুন
           </Link>

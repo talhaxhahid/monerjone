@@ -51,7 +51,7 @@ export async function GET() {
     const profiles = uniqueVisitors.map((v) => {
       const u = v.visitor;
       const age = calculateAge(u.dob);
-      const photoIds = (u.photos || []).map((p: { id: string }) => p.id);
+      const photoIds = u.photos.map((p) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency });
 
@@ -77,7 +77,7 @@ export async function GET() {
         lastActive: u.lastActive.toISOString(),
         active: isOnline,
         photoIds,
-        photos: photoIds.map((id: string) => `/api/photos/${id}`),
+        photos: photoIds.map((id) => `/api/photos/${id}`),
         matchScore,
         visitedAt: v.createdAt.toISOString(),
       };

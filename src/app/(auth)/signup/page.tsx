@@ -24,8 +24,6 @@ export default function SignupPage() {
     password: '',
   });
 
-  const [dobMonth, setDobMonth] = useState('');
-  const [dobYear, setDobYear] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -135,7 +133,7 @@ export default function SignupPage() {
           {/* Bottom Trust Note */}
           <div className="relative z-10 flex items-center gap-2 text-xs text-[#8B7FA8] pt-4 border-t border-white/10">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>শরীয়াহ সম্মত নিয়ম ও শতভাগ গোপনীয়তা সংরক্ষিত</span>
+            <span>সুশৃঙ্খল নিয়মনীতি ও শতভাগ গোপনীয়তা সংরক্ষিত</span>
           </div>
         </div>
 
@@ -174,37 +172,6 @@ export default function SignupPage() {
 
           <form onSubmit={handleSubmit} className="notranslate space-y-4" translate="no">
             
-            {/* Gender Selection */}
-            <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-2">
-                আমি খুঁজছি / বায়োডাটার ধরন:
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, gender: 'Male' })}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    formData.gender === 'Male'
-                      ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
-                      : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
-                  }`}
-                >
-                  <span>👨</span> পাত্রের বায়োডাটা (পুরুষ)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, gender: 'Female' })}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    formData.gender === 'Female'
-                      ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
-                      : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
-                  }`}
-                >
-                  <span>🧕</span> পাত্রীর বায়োডাটা (নারী)
-                </button>
-              </div>
-            </div>
-
             {/* Name Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -253,15 +220,11 @@ export default function SignupPage() {
                       <Calendar className="w-4 h-4 text-[#F5B942]" />
                     </div>
                     <select
-                      value={dobMonth}
+                      value={formData.dob ? Number(formData.dob.split('-')[1]) : ''}
                       onChange={(e) => {
-                        const m = e.target.value;
-                        setDobMonth(m);
-                        if (dobYear && m) {
-                          setFormData((prev) => ({ ...prev, dob: `${dobYear}-${m.padStart(2, '0')}-01` }));
-                        } else if (!m) {
-                          setFormData((prev) => ({ ...prev, dob: '' }));
-                        }
+                        const month = e.target.value.padStart(2, '0');
+                        const year = formData.dob ? formData.dob.split('-')[0] : '';
+                        setFormData({ ...formData, dob: year ? `${year}-${month}-01` : formData.dob });
                       }}
                       autoComplete="off"
                       className="w-full pl-10 pr-2 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors appearance-none"
@@ -278,15 +241,11 @@ export default function SignupPage() {
                   </div>
 
                   <select
-                    value={dobYear}
+                    value={formData.dob ? formData.dob.split('-')[0] : ''}
                     onChange={(e) => {
-                      const y = e.target.value;
-                      setDobYear(y);
-                      if (y && dobMonth) {
-                        setFormData((prev) => ({ ...prev, dob: `${y}-${dobMonth.padStart(2, '0')}-01` }));
-                      } else if (!y) {
-                        setFormData((prev) => ({ ...prev, dob: '' }));
-                      }
+                      const year = e.target.value;
+                      const month = formData.dob ? formData.dob.split('-')[1] : '01';
+                      setFormData({ ...formData, dob: `${year}-${month}-01` });
                     }}
                     autoComplete="off"
                     className="w-full px-2 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors appearance-none"
@@ -310,10 +269,54 @@ export default function SignupPage() {
                   className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
                 >
                   <option value="Never Married">অবিবাহিত</option>
-                  <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
+                  {formData.gender !== 'Female' && (
+                    <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
+                  )}
                   <option value="Divorced">ডিভোর্সড</option>
                   <option value="Widowed">বিধবা / বিপত্নীক</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Gender Selection — this is the user's own gender, not who
+                they're searching for. Male-only marital status option is
+                enforced below via the maritalStatus select. */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-2">
+                আপনার লিঙ্গ
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, gender: 'Male' })}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    formData.gender === 'Male'
+                      ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
+                      : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
+                  }`}
+                >
+                  <span>👨</span> পুরুষ
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      gender: 'Female',
+                      maritalStatus:
+                        formData.maritalStatus === 'Married - Seeking Another Wife'
+                          ? 'Never Married'
+                          : formData.maritalStatus,
+                    })
+                  }
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    formData.gender === 'Female'
+                      ? 'bg-[#FF4D7E]/15 border-[#FF4D7E] text-[#FF4D7E] shadow-md shadow-[#FF4D7E]/10'
+                      : 'bg-[#150E2B] border-white/10 text-[#B9AFD1] hover:border-[#FF4D7E]/50'
+                  }`}
+                >
+                  <span>🧕</span> নারী
+                </button>
               </div>
             </div>
 

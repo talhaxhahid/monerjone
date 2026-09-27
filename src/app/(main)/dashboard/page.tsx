@@ -234,7 +234,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <span className="block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-[#FF4D7E] transition-colors">
+            <span className="notranslate block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-[#FF4D7E] transition-colors" translate="no">
               {favoritesCount} টি
             </span>
             <span className="text-[10px] sm:text-[11px] text-[#8B7FA8] mt-0.5 block">শর্টলিস্ট করা বায়োডাটা</span>
@@ -257,7 +257,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <span className="block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-[#F5B942] transition-colors">
+            <span className="notranslate block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-[#F5B942] transition-colors" translate="no">
               {visitorCount} জন
             </span>
             <span className="text-[10px] sm:text-[11px] text-[#8B7FA8] mt-0.5 flex items-center gap-1">
@@ -284,7 +284,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <span className="block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-sky-400 transition-colors">
+            <span className="notranslate block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-sky-400 transition-colors" translate="no">
               {unreadCount} টি
             </span>
             <span className="text-[10px] sm:text-[11px] text-[#8B7FA8] mt-0.5 block">অপঠিত বার্তা</span>
@@ -303,7 +303,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div>
-            <span className="block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-emerald-400 transition-colors">
+            <span className="notranslate block text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif group-hover:text-emerald-400 transition-colors" translate="no">
               {user.premium === 'Free' ? '০ টি' : `${phoneUnlockStats.remaining} টি`}
             </span>
             <span className="text-[10px] sm:text-[11px] text-[#8B7FA8] mt-0.5 block">
@@ -359,7 +359,7 @@ export default function DashboardPage() {
             href="/favorites"
             className="text-xs font-semibold text-[#FF4D7E] hover:text-[#FF4D7E]/80 flex items-center gap-1 shrink-0"
           >
-            <span>সব দেখুন ({favoritedByCount})</span>
+            <span className="notranslate" translate="no">সব দেখুন ({favoritedByCount})</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -391,7 +391,7 @@ export default function DashboardPage() {
               <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-[#F5B942]" />
               <span>যারা আপনার প্রোফাইল দেখেছেন</span>
             </h2>
-            <p className="text-xs text-[#B9AFD1] mt-0.5">সর্বমোট {visitorCount} বার আপনার বায়োডাটা দেখা হয়েছে</p>
+            <p className="notranslate text-xs text-[#B9AFD1] mt-0.5" translate="no">সর্বমোট {visitorCount} বার আপনার বায়োডাটা দেখা হয়েছে</p>
           </div>
         </div>
 

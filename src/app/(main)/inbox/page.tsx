@@ -8,6 +8,7 @@ import {
   Send,
   ArrowLeft,
   Search,
+  Check,
   CheckCheck
 } from 'lucide-react';
 import { bn, timeAgo } from '@/lib/utils';
@@ -19,7 +20,7 @@ function InboxContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const toUserId = searchParams.get('to');
-  const { user, loading: authLoading, addToast, playNotificationChime } = useAuth();
+  const { user, loading: authLoading, addToast, playNotificationChime, refreshUser } = useAuth();
 
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
@@ -34,6 +35,10 @@ function InboxContent() {
   const [upgradeModalMsg, setUpgradeModalMsg] = useState<string>('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevUnreadTotalRef = useRef<number>(0);
+  const prevMessageCountRef = useRef<number>(0);
+  const isFirstConvListLoadRef = useRef<boolean>(true);
+  const isFirstMessagesLoadRef = useRef<boolean>(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,7 +52,19 @@ function InboxContent() {
       const res = await fetch('/api/conversations');
       if (res.ok) {
         const data = await res.json();
-        setConversations(data.conversations || []);
+        const list: ConversationSummary[] = data.conversations || [];
+        setConversations(list);
+
+        const totalUnread = list.reduce((sum, c) => sum + (c.unread || 0), 0);
+        if (!isFirstConvListLoadRef.current && totalUnread > prevUnreadTotalRef.current) {
+          // A new incoming message raised the unread total — this is the
+          // receiver's device, so this is the correct place to chime
+          // (sending a message should never make the sender's own device
+          // play a "new message" sound).
+          playNotificationChime();
+        }
+        prevUnreadTotalRef.current = totalUnread;
+        isFirstConvListLoadRef.current = false;
       }
     } catch (err) {
       console.error(err);
@@ -95,14 +112,37 @@ function InboxContent() {
   }, [toUserId, user]);
 
   // Load messages for the active conversation
-  const loadMessages = async (convId: string) => {
+  const loadMessages = async (convId: string, isFirstLoad: boolean = false) => {
     setLoadingMessages(true);
     try {
       const res = await fetch(`/api/conversations/${convId}/messages`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data.messages || []);
+        const newMessages: MessageItem[] = data.messages || [];
+
+        if (
+          !isFirstMessagesLoadRef.current &&
+          newMessages.length > prevMessageCountRef.current
+        ) {
+          const latest = newMessages[newMessages.length - 1];
+          // Only chime for messages that just arrived FROM the other person
+          // -- never for our own outgoing message being echoed back by the
+          // next poll.
+          if (latest && latest.from !== user?.id) {
+            playNotificationChime();
+          }
+        }
+        prevMessageCountRef.current = newMessages.length;
+        isFirstMessagesLoadRef.current = false;
+
+        setMessages(newMessages);
         setActiveRecipient(data.other);
+        // Opening a conversation marks its messages as read server-side;
+        // refresh the global unread badge right away instead of waiting
+        // for the next full page load/login.
+        if (isFirstLoad) {
+          refreshUser();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -113,7 +153,12 @@ function InboxContent() {
 
   useEffect(() => {
     if (activeConvId) {
-      loadMessages(activeConvId);
+      // Switching threads: don't compare the new thread's message count
+      // against the previous thread's count, and don't chime for its
+      // (already-existing) history on first open.
+      prevMessageCountRef.current = 0;
+      isFirstMessagesLoadRef.current = true;
+      loadMessages(activeConvId, true);
       // Auto-poll messages every 6 seconds
       const interval = setInterval(() => {
         loadMessages(activeConvId);
@@ -145,7 +190,9 @@ function InboxContent() {
 
       if (res.ok) {
         setMessages((prev) => [...prev, data.message]);
-        playNotificationChime();
+        // Keep our own tracked count in sync so the next poll doesn't
+        // mistake our own just-sent message for a new incoming one.
+        prevMessageCountRef.current += 1;
         loadConversations();
       } else if (res.status === 422) {
         addToast(data.message || 'যোগাযোগের তথ্য ব্লক করা হয়েছে', 'error');
@@ -228,6 +275,11 @@ function InboxContent() {
                     onClick={() => {
                       setActiveConvId(c.id);
                       setActiveRecipient(c.other);
+                      // Optimistically clear this conversation's unread badge
+                      // right away instead of waiting for the next list poll.
+                      setConversations((prev) =>
+                        prev.map((conv) => (conv.id === c.id ? { ...conv, unread: 0 } : conv))
+                      );
                     }}
                     className={`w-full p-3 rounded-2xl flex items-center gap-3 transition-all text-left ${
                       isSelected
@@ -236,14 +288,16 @@ function InboxContent() {
                     }`}
                   >
                     {/* Avatar */}
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden bg-[#331A5C] shrink-0 border border-[#FF4D7E]/20">
-                      <ImageWithFallback
-                        src={c.other.photoUrl}
-                        alt={c.other.name}
-                        name={c.other.name}
-                        fallbackType="avatar"
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative w-12 h-12 shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-[#331A5C] border border-[#FF4D7E]/20">
+                        <ImageWithFallback
+                          src={c.other.photoUrl}
+                          alt={c.other.name}
+                          name={c.other.name}
+                          fallbackType="avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       {c.other.active && (
                         <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#150E2B] z-20" />
                       )}
@@ -366,7 +420,17 @@ function InboxContent() {
                         </div>
                         <span className="text-[10px] text-[#8B7FA8] mt-1 px-1 flex items-center gap-1">
                           <span>{timeAgo(m.at)}</span>
-                          {isMe && <CheckCheck className="w-3 h-3 text-sky-400 inline" />}
+                          {isMe && (
+                            m.readAt ? (
+                              <span title="দেখা হয়েছে" className="inline-flex items-center">
+                                <CheckCheck className="w-3 h-3 text-sky-400" />
+                              </span>
+                            ) : (
+                              <span title="পাঠানো হয়েছে" className="inline-flex items-center">
+                                <Check className="w-3 h-3 text-[#8B7FA8]" />
+                              </span>
+                            )
+                          )}
                         </span>
                       </div>
                     );

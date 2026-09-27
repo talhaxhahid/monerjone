@@ -5,12 +5,20 @@ import { useRouter } from 'next/navigation';
 import { Search, Sparkles, ShieldCheck } from 'lucide-react';
 import { BD_DISTRICTS } from '@/lib/utils';
 
+const AGE_RANGES = [
+  { key: '18-21', label: '18 — 21', min: 18, max: 21 },
+  { key: '22-25', label: '22 — 25', min: 22, max: 25 },
+  { key: '26-30', label: '26 — 30', min: 26, max: 30 },
+  { key: '31-39', label: '31 — 39', min: 31, max: 39 },
+  { key: '40+', label: '40+', min: 40, max: null as number | null },
+];
+
 export default function HomePage() {
   const router = useRouter();
 
   // Quick Search state
   const [lookingForGender, setLookingForGender] = useState('Female');
-  const [minAge, setMinAge] = useState(18);
+  const [ageRangeKey, setAgeRangeKey] = useState('18-21');
   const [district, setDistrict] = useState('All');
   const [maritalStatus, setMaritalStatus] = useState('All');
 
@@ -18,17 +26,21 @@ export default function HomePage() {
     e.preventDefault();
     const query = new URLSearchParams();
     query.set('gender', lookingForGender);
-    query.set('ageMin', minAge.toString());
+    const range = AGE_RANGES.find((r) => r.key === ageRangeKey) || AGE_RANGES[0];
+    query.set('ageMin', range.min.toString());
+    if (range.max !== null) query.set('ageMax', range.max.toString());
     if (district !== 'All') query.set('district', district);
     if (maritalStatus !== 'All') query.set('maritalStatus', maritalStatus);
-    router.push(`/search?${query.toString()}`);
+    // Guests can't browse biodatas without an account — send them to signup
+    // (with their quick-search picks preserved) instead of the search page.
+    router.push(`/signup?${query.toString()}`);
   };
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-24 md:pb-16">
+    <div className="h-full flex flex-col justify-center overflow-hidden">
       
       {/* ================= HERO SECTION WITH FULL BACKGROUND & EMBEDDED FORM ================= */}
-      <section className="relative -mt-4 sm:-mt-8 pt-8 pb-16 sm:pt-16 sm:pb-24 overflow-hidden rounded-b-[2rem] sm:rounded-b-[3.5rem] border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <section className="relative py-6 sm:py-10 overflow-hidden rounded-b-[2rem] sm:rounded-b-[3.5rem] border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {/* Full Hero Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
@@ -58,12 +70,12 @@ export default function HomePage() {
             </h1>
 
             <p className="text-xs sm:text-sm md:text-base text-[#B9AFD1] max-w-2xl mx-auto leading-relaxed drop-shadow px-2">
-              হাজারো খাঁটি বাংলাদেশী মুসলিম পাত্র-পাত্রীর মধ্য থেকে বেছে নিন আপনার উপযুক্ত দ্বীনদার জীবনসঙ্গী। ১০০% ভেরিফাইড বায়োডাটা ও সম্পূর্ণ গোপনীয়তা।
+              আপনার মনের মতো একজন জীবনসঙ্গী খুঁজে নিন, যার সঙ্গে গড়ে উঠবে বিশ্বাস, বোঝাপড়া আর সুন্দর একটি সম্পর্ক। আজই শুরু হোক আপনার নতুন জীবনের গল্প।
             </p>
           </div>
 
           {/* Embedded Glassmorphic Quick Match Finder Card */}
-          <div className="mt-6 sm:mt-10 max-w-4xl mx-auto rounded-3xl bg-[#1F1640]/95 border border-white/15 p-4 sm:p-7 shadow-2xl backdrop-blur-2xl">
+          <div className="mt-4 sm:mt-6 max-w-4xl mx-auto rounded-3xl bg-[#1F1640]/95 border border-white/15 p-4 sm:p-7 shadow-2xl backdrop-blur-2xl">
             
             {/* Form Title & Gender Quick Switch Tabs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-white/10 mb-4">
@@ -103,20 +115,20 @@ export default function HomePage() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5">
                 
-                {/* Minimum Age (no upper cap — all ages 18+ are included) */}
+                {/* Preferred Age Range */}
                 <div>
                   <label className="block text-xs md:text-sm font-semibold text-[#B9AFD1] mb-1 md:mb-1.5">
-                    ন্যূনতম বয়স
+                    পছন্দের বয়স
                   </label>
                   <select
-                    value={minAge}
-                    onChange={(e) => setMinAge(Number(e.target.value))}
+                    value={ageRangeKey}
+                    onChange={(e) => setAgeRangeKey(e.target.value)}
                     autoComplete="off"
                     className="w-full px-3.5 py-2.5 md:py-3.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm md:text-base font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
                   >
-                    {Array.from({ length: 43 }, (_, i) => 18 + i).map((age) => (
-                      <option key={age} value={age}>
-                        {age}+ বছর
+                    {AGE_RANGES.map((r) => (
+                      <option key={r.key} value={r.key}>
+                        {r.label} বছর
                       </option>
                     ))}
                   </select>

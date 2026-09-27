@@ -14,7 +14,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Save,
-  Trash2,
+  X,
   Plus,
   AlertCircle
 } from 'lucide-react';
@@ -348,6 +348,8 @@ export default function ProfileEditWizardPage() {
                   placeholder="যেমন: 65"
                   value={formData.weightKg || ''}
                   onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
+                  onFocus={(e) => e.target.select()}
+                  autoComplete="off"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -382,7 +384,9 @@ export default function ProfileEditWizardPage() {
                   <option value="Never Married">অবিবাহিত</option>
                   <option value="Divorced">ডিভোর্সড</option>
                   <option value="Widowed">বিধবা / বিপত্নীক</option>
-                  <option value="Married - Seeking Another Wife">বিবাহিত (দ্বিতীয় বিবাহে আগ্রহী)</option>
+                  {user?.gender !== 'Female' && (
+                    <option value="Married - Seeking Another Wife">বিবাহিত (দ্বিতীয় বিবাহে আগ্রহী)</option>
+                  )}
                 </select>
               </div>
 
@@ -426,6 +430,7 @@ export default function ProfileEditWizardPage() {
                   value={formData.brothers ?? 0}
                   onChange={(e) => setFormData({ ...formData, brothers: parseInt(e.target.value, 10) || 0 })}
                   onFocus={(e) => e.target.select()}
+                  autoComplete="off"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -440,6 +445,7 @@ export default function ProfileEditWizardPage() {
                   value={formData.sisters ?? 0}
                   onChange={(e) => setFormData({ ...formData, sisters: parseInt(e.target.value, 10) || 0 })}
                   onFocus={(e) => e.target.select()}
+                  autoComplete="off"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                 />
               </div>
@@ -559,39 +565,43 @@ export default function ProfileEditWizardPage() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>নামাজ আদায়ের অভ্যাস</span>
-                </label>
-                <select
-                  value={formData.prayerFrequency || '5 times a day'}
-                  onChange={(e) => setFormData({ ...formData, prayerFrequency: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                >
-                  <option value="5 times a day">দৈনিক ৫ ওয়াক্ত</option>
-                  <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
-                  <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
-                  <option value="Usually">মাঝে মাঝে / জুমুআ</option>
-                  <option value="Non-Religious">নিয়মিত নন</option>
-                </select>
-              </div>
+              {formData.religion === 'Islam' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                      <span>নামাজ আদায়ের অভ্যাস</span>
+                    </label>
+                    <select
+                      value={formData.prayerFrequency || '5 times a day'}
+                      onChange={(e) => setFormData({ ...formData, prayerFrequency: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
+                    >
+                      <option value="5 times a day">দৈনিক ৫ ওয়াক্ত</option>
+                      <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
+                      <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
+                      <option value="Usually">মাঝে মাঝে / জুমুআ</option>
+                      <option value="Non-Religious">নিয়মিত নন</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>পর্দা / হিজাব / নিকাব (নারীদের জন্য)</span>
-                </label>
-                <select
-                  value={formData.hijabNiqab || 'Wears Hijab'}
-                  onChange={(e) => setFormData({ ...formData, hijabNiqab: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                >
-                  <option value="Wears Hijab">হিজাব পরেন</option>
-                  <option value="Wears Hijab & Niqab">হিজাব ও নিকাব পরেন</option>
-                  <option value="Does not currently wear Hijab">বর্তমানে হিজাব পরেন না</option>
-                  <option value="Undecided / Open to discussion">আলোচনা সাপেক্ষ</option>
-                  <option value="N/A">প্রযোজ্য নয় (পুরুষ)</option>
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                      <span>পর্দা / হিজাব / নিকাব (নারীদের জন্য)</span>
+                    </label>
+                    <select
+                      value={formData.hijabNiqab || 'Wears Hijab'}
+                      onChange={(e) => setFormData({ ...formData, hijabNiqab: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
+                    >
+                      <option value="Wears Hijab">হিজাব পরেন</option>
+                      <option value="Wears Hijab & Niqab">হিজাব ও নিকাব পরেন</option>
+                      <option value="Does not currently wear Hijab">বর্তমানে হিজাব পরেন না</option>
+                      <option value="Undecided / Open to discussion">আলোচনা সাপেক্ষ</option>
+                      <option value="N/A">প্রযোজ্য নয় (পুরুষ)</option>
+                    </select>
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
@@ -786,9 +796,10 @@ export default function ProfileEditWizardPage() {
                     <button
                       type="button"
                       onClick={() => removePhoto(idx)}
-                      className="absolute top-1 right-1 p-1 rounded-full bg-rose-900/90 text-rose-200 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                      aria-label="ছবি মুছে ফেলুন"
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors z-20"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <X className="w-3.5 h-3.5" strokeWidth={2.5} />
                     </button>
                     {idx === 0 && (
                       <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FF4D7E] text-white z-20">
@@ -921,7 +932,11 @@ export default function ProfileEditWizardPage() {
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                    <span>জীবনসঙ্গীর কর্মজীবন সংক্রান্ত প্রত্যাশা</span>
+                    <span>
+                      {user?.gender === 'Female'
+                        ? 'আপনি কি বিয়ের পর কাজ করতে চান?'
+                        : 'আপনি কি চান আপনার স্ত্রী বিয়ের পর কাজ করুক?'}
+                    </span>
                   </label>
                   <select
                     value={formData.workPreference || ''}
@@ -929,8 +944,17 @@ export default function ProfileEditWizardPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
                   >
                     <option value="">কোনো পছন্দ নেই</option>
-                    <option value="Should work">চাকরি/কাজ করবেন এমন প্রত্যাশা</option>
-                    <option value="Should not work">বিয়ের পর কাজ না করলেও চলবে</option>
+                    {user?.gender === 'Female' ? (
+                      <>
+                        <option value="Should work">হ্যাঁ, আমি কাজ করতে চাই</option>
+                        <option value="Should not work">না, বিয়ের পর কাজ না করলেও চলবে</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Should work">হ্যাঁ, আমার স্ত্রী কাজ করুক এমনটা চাই</option>
+                        <option value="Should not work">না, বিয়ের পর কাজ না করলেও চলবে</option>
+                      </>
+                    )}
                     <option value="Open to discussion">আলোচনা সাপেক্ষ</option>
                   </select>
                 </div>

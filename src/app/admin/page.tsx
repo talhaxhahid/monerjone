@@ -357,6 +357,7 @@ export default function AdminDashboardPage() {
                 placeholder="নাম, ফোন নম্বর বা জেলা দিয়ে খুঁজুন..."
                 value={searchUser}
                 onChange={(e) => setSearchUser(e.target.value)}
+                autoComplete="off"
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:border-[#FF4D7E] outline-none placeholder:text-[#8B7FA8]"
               />
             </div>

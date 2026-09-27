@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserPublic } from '@/types';
 
 interface Toast {
@@ -30,6 +31,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<UserPublic | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -154,7 +156,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       addToast('লগআউট সম্পন্ন হয়েছে', 'info');
-      window.location.href = '/';
+      // A hard reload here (window.location.href) forces the browser to
+      // fully unload and refetch the document, which briefly flashes an
+      // unstyled blank page before hydration completes. A client-side
+      // route change avoids that entirely.
+      router.push('/');
+      router.refresh();
     } catch (err) {
       console.error(err);
     }

@@ -236,7 +236,7 @@ export default function ProfileDetailPage() {
                 className="w-full h-full object-cover"
               />
 
-              {/* 1. TOP-LEFT: Premium Tier Badge OR Match Score Badge */}
+              {/* Premium Tier Badge */}
               {profile.premium === 'Platinum' ? (
                 <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-indigo-100 via-white to-indigo-200 text-indigo-950 border border-white/80 shadow-lg shadow-indigo-950/40 flex items-center gap-1.5 shimmer-badge">
                   <Crown className="w-4 h-4 text-indigo-700 shrink-0" />
@@ -247,20 +247,7 @@ export default function ProfileDetailPage() {
                   <Crown className="w-4 h-4 text-[#291704] shrink-0" />
                   <span>গোল্ড মেম্বার</span>
                 </div>
-              ) : profile.matchScore ? (
-                <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-[#150E2B]/85 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{profile.matchScore}% ম্যাচ</span>
-                </div>
               ) : null}
-
-              {/* 2. BOTTOM-LEFT: Match Score Badge (When user is Premium) */}
-              {profile.premium !== 'Free' && profile.matchScore && (
-                <div className="absolute bottom-3 left-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-[#150E2B]/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 flex items-center gap-1 shadow-md">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{profile.matchScore}% ম্যাচ</span>
-                </div>
-              )}
             </div>
 
             {/* Thumbnail Row */}
@@ -375,11 +362,11 @@ export default function ProfileDetailPage() {
               )}
             </div>
 
-            {/* Actions Card Footer */}
+            {/* Actions Footer */}
             {!isSelf && (
-              <div className="p-4 rounded-2xl bg-[#150E2B] border border-[#FF4D7E]/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
                 {phoneUnlocked && phoneNumber && (
-                  <div className="flex-1 flex items-center gap-2 text-emerald-400 bg-emerald-950/40 px-4 py-2.5 rounded-xl border border-emerald-500/30">
+                  <div className="flex items-center gap-2 text-emerald-400 bg-emerald-950/40 px-4 py-2.5 rounded-full border border-emerald-500/30">
                     <Phone className="w-4 h-4 shrink-0" />
                     <span className="text-sm font-bold font-mono select-all">
                       {phoneNumber}
@@ -387,10 +374,10 @@ export default function ProfileDetailPage() {
                   </div>
                 )}
 
-                {/* Send Message Button */}
+                {/* Send Message Button — compact gradient pill */}
                 <Link
                   href={`/inbox?to=${profile.id}`}
-                  className="flex-1 py-2.5 px-5 rounded-xl text-xs font-bold text-center bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-md shadow-[#FF4D7E]/25 flex items-center justify-center gap-2 transition-all"
+                  className="py-3.5 px-6 rounded-full text-xs font-bold text-center bg-gradient-to-r from-[#FF4D7E] to-[#FF7A9E] hover:from-[#E63465] hover:to-[#FF4D7E] text-white shadow-lg shadow-[#FF4D7E]/30 flex items-center justify-center gap-2 transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>মেসেজ দিন</span>
@@ -481,6 +468,18 @@ export default function ProfileDetailPage() {
               <span className="text-[#8B7FA8] block">ধূমপান:</span>
               <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.smoking) || 'না'}</span>
             </div>
+            {profile.allergies && (
+              <div>
+                <span className="text-[#8B7FA8] block">অ্যালার্জি:</span>
+                <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.allergies}</span>
+              </div>
+            )}
+            {profile.healthProblems && (
+              <div className="col-span-2">
+                <span className="text-[#8B7FA8] block">শারীরিক স্বাস্থ্য সম্পর্কিত তথ্য:</span>
+                <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.healthProblems}</span>
+              </div>
+            )}
             {profile.favoriteBooks && (
               <div className="col-span-2">
                 <span className="text-[#8B7FA8] block">প্রিয় বই:</span>
@@ -548,6 +547,22 @@ export default function ProfileDetailPage() {
                 {bn(profile.prefEducation) || 'যেকোনো'}
               </span>
             </div>
+            {profile.workPreference && (
+              <div className="p-3.5 rounded-2xl bg-[#150E2B] border border-white/10 sm:col-span-3">
+                <span className="text-[#8B7FA8] block">
+                  {profile.gender === 'Male'
+                    ? 'বিয়ের পর স্ত্রীর কর্মজীবন নিয়ে প্রত্যাশা:'
+                    : 'বিয়ের পর কাজ করা প্রসঙ্গে প্রত্যাশা:'}
+                </span>
+                <span className="font-bold text-[#F5F3FA] mt-1 block">
+                  {profile.workPreference === 'Should work'
+                    ? (profile.gender === 'Male' ? 'হ্যাঁ, স্ত্রী কাজ করুক এমনটা চান' : 'হ্যাঁ, বিয়ের পর কাজ করতে চান')
+                    : profile.workPreference === 'Should not work'
+                    ? 'না, বিয়ের পর কাজ না করলেও চলবে'
+                    : 'আলোচনা সাপেক্ষ'}
+                </span>
+              </div>
+            )}
           </div>
 
           {profile.lookingFor && (

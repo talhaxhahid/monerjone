@@ -84,7 +84,7 @@ export default function LoginPage() {
               </div>
               <div className="flex items-center gap-2.5 text-xs text-[#F5F3FA]">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>সম্পূর্ণ নিরাপদ ও ইসলামিক শিষ্টাচার সম্মত</span>
+                <span>সম্পূর্ণ নিরাপদ ও শালীনতা সম্মত পরিবেশ</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs text-[#F5F3FA]">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />

@@ -14,6 +14,25 @@ import {
   Users
 } from 'lucide-react';
 
+const AGE_RANGES = [
+  { key: '18-21', label: '18 — 21', min: 18, max: 21 },
+  { key: '22-25', label: '22 — 25', min: 22, max: 25 },
+  { key: '26-30', label: '26 — 30', min: 26, max: 30 },
+  { key: '31-39', label: '31 — 39', min: 31, max: 39 },
+  { key: '40+', label: '40+', min: 40, max: null as number | null },
+];
+
+function matchAgeRangeKey(urlAgeMin: string | null, urlAgeMax: string | null): string {
+  if (!urlAgeMin) return '18-21';
+  const min = Number(urlAgeMin);
+  const max = urlAgeMax ? Number(urlAgeMax) : null;
+  const exact = AGE_RANGES.find((r) => r.min === min && r.max === max);
+  if (exact) return exact.key;
+  // Fall back to whichever bucket the given minimum age falls into
+  const byMin = [...AGE_RANGES].reverse().find((r) => min >= r.min);
+  return byMin ? byMin.key : '18-21';
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -29,7 +48,9 @@ function SearchContent() {
   const [prayerFrequency, setPrayerFrequency] = useState<string>(searchParams.get('prayerFrequency') || 'All');
   const [children, setChildren] = useState<string>(searchParams.get('children') || 'All');
   const [premiumOnly, setPremiumOnly] = useState<boolean>(searchParams.get('premium') === 'premium');
-  const [ageMin, setAgeMin] = useState<number>(Number(searchParams.get('ageMin')) || 18);
+  const [ageRangeKey, setAgeRangeKey] = useState<string>(
+    matchAgeRangeKey(searchParams.get('ageMin'), searchParams.get('ageMax'))
+  );
   const [sort, setSort] = useState<string>(searchParams.get('sort') || 'newest');
 
   // Effective Gender
@@ -60,7 +81,11 @@ function SearchContent() {
         if (prayerFrequency !== 'All') q.set('prayerFrequency', prayerFrequency);
         if (children !== 'All') q.set('children', children);
         if (premiumOnly) q.set('premium', 'premium');
-        q.set('ageMin', ageMin.toString());
+        {
+          const range = AGE_RANGES.find((r) => r.key === ageRangeKey) || AGE_RANGES[0];
+          q.set('ageMin', range.min.toString());
+          if (range.max !== null) q.set('ageMax', range.max.toString());
+        }
         q.set('sort', sort);
 
         const res = await fetch(`/api/profiles?${q.toString()}`);
@@ -80,7 +105,7 @@ function SearchContent() {
     return () => {
       isMounted = false;
     };
-  }, [user, effectiveGender, district, maritalStatus, religion, education, prayerFrequency, children, premiumOnly, ageMin, sort]);
+  }, [user, effectiveGender, district, maritalStatus, religion, education, prayerFrequency, children, premiumOnly, ageRangeKey, sort]);
 
   const resetFilters = () => {
     setDistrict('All');
@@ -90,7 +115,7 @@ function SearchContent() {
     setPrayerFrequency('All');
     setChildren('All');
     setPremiumOnly(false);
-    setAgeMin(18);
+    setAgeRangeKey('18-21');
     setSort('newest');
   };
 
@@ -183,17 +208,17 @@ function SearchContent() {
               </div>
             )}
 
-            {/* Minimum Age (no upper cap) */}
+            {/* Preferred Age */}
             <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ন্যূনতম বয়স</label>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">পছন্দের বয়স</label>
               <select
-                value={ageMin}
-                onChange={(e) => setAgeMin(Number(e.target.value))}
+                value={ageRangeKey}
+                onChange={(e) => setAgeRangeKey(e.target.value)}
                 autoComplete="off"
                 className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
               >
-                {Array.from({ length: 43 }, (_, i) => 18 + i).map((age) => (
-                  <option key={age} value={age}>{age}+ বছর</option>
+                {AGE_RANGES.map((r) => (
+                  <option key={r.key} value={r.key}>{r.label} বছর</option>
                 ))}
               </select>
             </div>
@@ -231,6 +256,21 @@ function SearchContent() {
               </select>
             </div>
 
+            {/* Religion */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ধর্ম</label>
+              <select
+                value={religion}
+                onChange={(e) => setReligion(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="Islam">ইসলাম</option>
+                <option value="Hindu">হিন্দু</option>
+                <option value="Other">অন্যান্য</option>
+              </select>
+            </div>
+
             {/* Education */}
             <div>
               <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">শিক্ষাগত যোগ্যতা</label>
@@ -246,6 +286,21 @@ function SearchContent() {
                 <option value="SSC">এসএসসি</option>
                 <option value="PhD">পিএইচডি</option>
                 <option value="Primary">প্রাথমিক</option>
+              </select>
+            </div>
+
+            {/* Children */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">সন্তান</label>
+              <select
+                value={children}
+                onChange={(e) => setChildren(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="No children">সন্তান নেই</option>
+                <option value="1 child">১ সন্তান</option>
+                <option value="2+ children">২ বা ততোধিক সন্তান</option>
               </select>
             </div>
 
@@ -363,15 +418,15 @@ function SearchContent() {
 
             {/* Age */}
             <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ন্যূনতম বয়স ({ageMin}+)</label>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">পছন্দের বয়স</label>
               <select
-                value={ageMin}
-                onChange={(e) => setAgeMin(Number(e.target.value))}
+                value={ageRangeKey}
+                onChange={(e) => setAgeRangeKey(e.target.value)}
                 autoComplete="off"
                 className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA]"
               >
-                {Array.from({ length: 43 }, (_, i) => 18 + i).map((age) => (
-                  <option key={age} value={age}>{age}+ বছর</option>
+                {AGE_RANGES.map((r) => (
+                  <option key={r.key} value={r.key}>{r.label} বছর</option>
                 ))}
               </select>
             </div>
@@ -389,6 +444,88 @@ function SearchContent() {
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Marital Status */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">বৈবাহিক অবস্থা</label>
+              <select
+                value={maritalStatus}
+                onChange={(e) => setMaritalStatus(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="Never Married">অবিবাহিত</option>
+                <option value="Divorced">ডিভোর্সড</option>
+                <option value="Widowed">বিধবা / বিপত্নীক</option>
+                {effectiveGender !== 'Female' && (
+                  <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহ)</option>
+                )}
+              </select>
+            </div>
+
+            {/* Religion */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ধর্ম</label>
+              <select
+                value={religion}
+                onChange={(e) => setReligion(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="Islam">ইসলাম</option>
+                <option value="Hindu">হিন্দু</option>
+                <option value="Other">অন্যান্য</option>
+              </select>
+            </div>
+
+            {/* Education */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">শিক্ষাগত যোগ্যতা</label>
+              <select
+                value={education}
+                onChange={(e) => setEducation(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="Honours">অনার্স / স্নাতক</option>
+                <option value="Masters">মাস্টার্স</option>
+                <option value="HSC">এইচএসসি</option>
+                <option value="SSC">এসএসসি</option>
+                <option value="PhD">পিএইচডি</option>
+                <option value="Primary">প্রাথমিক</option>
+              </select>
+            </div>
+
+            {/* Prayer Frequency */}
+            <div>
+              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">নামাজ আদায়</label>
+              <select
+                value={prayerFrequency}
+                onChange={(e) => setPrayerFrequency(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
+              >
+                <option value="All">যেকোনো</option>
+                <option value="5 times a day">দৈনিক ৫ ওয়াক্ত</option>
+                <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
+                <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
+                <option value="Usually">মাঝে মাঝে</option>
+              </select>
+            </div>
+
+            {/* Premium Only Toggle */}
+            <div className="pt-1">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={premiumOnly}
+                  onChange={(e) => setPremiumOnly(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#FF4D7E] bg-[#150E2B] border-white/10 focus:ring-0"
+                />
+                <span className="text-xs font-semibold text-[#F5B942] flex items-center gap-1">
+                  <span>👑</span> শুধুমাত্র প্রিমিয়াম প্রোফাইল
+                </span>
+              </label>
             </div>
 
             {/* Actions */}

@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
 
     const where: Record<string, unknown> = {
       active: true,
+      // A profile isn't considered "live" without at least one photo.
+      photos: { some: {} },
     };
 
     // Opposite-gender rule enforced if logged in

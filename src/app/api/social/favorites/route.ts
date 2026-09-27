@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const profiles = favs.map((f: any) => {
       const u = isReceived ? f.user : f.target;
       const age = calculateAge(u.dob);
-      const photoIds = (u.photos || []).map((p: { id: string }) => p.id);
+      const photoIds = u.photos.map((p: { id: string }) => p.id);
       const isOnline = Date.now() - new Date(u.lastActive).getTime() < 10 * 60 * 1000;
       const matchScore = computeMatchScore(me.profile, { ...u, age, education: u.profile?.education, prayerFrequency: u.profile?.prayerFrequency });
 
