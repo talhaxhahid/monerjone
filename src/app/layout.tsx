@@ -65,6 +65,31 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#150E2B] text-[#F5F3FA] min-h-screen flex flex-col font-sans selection:bg-[#FF4D7E] selection:text-white">
+        {/*
+          Google Translate (and Chrome's built-in "Translate page") rewrites text
+          nodes in the DOM. When React later tries to remove/move one of those
+          nodes it throws "Failed to execute 'removeChild' on 'Node'" and the
+          whole app falls over ("This page couldn't load"). This is the widely
+          used, safe workaround: ignore DOM operations on nodes that were
+          already moved by the translator instead of crashing.
+        */}
+        <Script id="translate-crash-guard" strategy="beforeInteractive">
+          {`
+            (function () {
+              if (typeof Node !== 'function' || !Node.prototype) return;
+              var origRemove = Node.prototype.removeChild;
+              Node.prototype.removeChild = function (child) {
+                if (child && child.parentNode !== this) { return child; }
+                return origRemove.apply(this, arguments);
+              };
+              var origInsert = Node.prototype.insertBefore;
+              Node.prototype.insertBefore = function (newNode, refNode) {
+                if (refNode && refNode.parentNode !== this) { return newNode; }
+                return origInsert.apply(this, arguments);
+              };
+            })();
+          `}
+        </Script>
         {/* Meta Pixel Code */}
         <Script id="fb-pixel" strategy="afterInteractive">
           {`

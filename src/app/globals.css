@@ -160,3 +160,11 @@
   animation: shimmer 1.8s infinite;
 }
 
+
+/* Placeholder for the contentEditable chat composer (no <input>, so browsers
+   don't offer password/card/address autofill above the keyboard). */
+[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #8b7fa8;
+  pointer-events: none;
+}

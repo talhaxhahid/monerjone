@@ -6,6 +6,7 @@ import { Search, Sparkles, ShieldCheck } from 'lucide-react';
 import { BD_DISTRICTS } from '@/lib/utils';
 
 const AGE_RANGES = [
+  { key: 'all', label: 'যেকোনো বয়স', min: null as number | null, max: null as number | null },
   { key: '18-21', label: '18 — 21', min: 18, max: 21 },
   { key: '22-25', label: '22 — 25', min: 22, max: 25 },
   { key: '26-30', label: '26 — 30', min: 26, max: 30 },
@@ -18,7 +19,7 @@ export default function HomePage() {
 
   // Quick Search state
   const [lookingForGender, setLookingForGender] = useState('Female');
-  const [ageRangeKey, setAgeRangeKey] = useState('18-21');
+  const [ageRangeKey, setAgeRangeKey] = useState('all');
   const [district, setDistrict] = useState('All');
   const [maritalStatus, setMaritalStatus] = useState('All');
 
@@ -27,7 +28,7 @@ export default function HomePage() {
     const query = new URLSearchParams();
     query.set('gender', lookingForGender);
     const range = AGE_RANGES.find((r) => r.key === ageRangeKey) || AGE_RANGES[0];
-    query.set('ageMin', range.min.toString());
+    if (range.min !== null) query.set('ageMin', range.min.toString());
     if (range.max !== null) query.set('ageMax', range.max.toString());
     if (district !== 'All') query.set('district', district);
     if (maritalStatus !== 'All') query.set('maritalStatus', maritalStatus);
@@ -75,120 +76,189 @@ export default function HomePage() {
           </div>
 
           {/* Embedded Glassmorphic Quick Match Finder Card */}
-          <div className="mt-4 sm:mt-6 max-w-4xl mx-auto rounded-3xl bg-[#1F1640]/95 border border-white/15 p-4 sm:p-7 shadow-2xl backdrop-blur-2xl">
-            
-            {/* Form Title & Gender Quick Switch Tabs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-white/10 mb-4">
-              <span className="text-xs sm:text-sm font-bold text-[#F5F3FA] flex items-center gap-2">
-                <Search className="w-4 h-4 text-[#F5B942]" />
-                বায়োডাটা অনুসন্ধান ফিল্টার
-              </span>
+          <div className="mt-4 sm:mt-6 max-w-4xl mx-auto rounded-3xl bg-[#1F1640]/95 border border-white/15 shadow-2xl backdrop-blur-2xl">
 
-              {/* Gender Segmented Switch */}
-              <div className="grid grid-cols-2 p-1 rounded-xl bg-[#150E2B] border border-white/10 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setLookingForGender('Female')}
-                  className={`px-4 py-2 md:px-5 md:py-2.5 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    lookingForGender === 'Female'
-                      ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/30'
-                      : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
-                  }`}
-                >
-                  <span className="md:text-base">🧕</span> পাত্রী (কনে)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLookingForGender('Male')}
-                  className={`px-4 py-2 md:px-5 md:py-2.5 rounded-lg text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    lookingForGender === 'Male'
-                      ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/30'
-                      : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
-                  }`}
-                >
-                  <span className="md:text-base">👨</span> পাত্র (বর)
-                </button>
+            {/* ================= MOBILE (unchanged) ================= */}
+            <div className="md:hidden p-4 sm:p-7">
+              {/* Form Title & Gender Quick Switch Tabs */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-white/10 mb-4">
+                <span className="text-xs sm:text-sm font-bold text-[#F5F3FA] flex items-center gap-2">
+                  <Search className="w-4 h-4 text-[#F5B942]" />
+                  বায়োডাটা অনুসন্ধান ফিল্টার
+                </span>
+
+                {/* Gender Segmented Switch */}
+                <div className="grid grid-cols-2 p-1 rounded-xl bg-[#150E2B] border border-white/10 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setLookingForGender('Female')}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      lookingForGender === 'Female'
+                        ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/30'
+                        : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
+                    }`}
+                  >
+                    <span>🧕</span> পাত্রী (কনে)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLookingForGender('Male')}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      lookingForGender === 'Male'
+                        ? 'bg-[#FF4D7E] text-white shadow-md shadow-[#FF4D7E]/30'
+                        : 'text-[#B9AFD1] hover:text-[#F5F3FA]'
+                    }`}
+                  >
+                    <span>👨</span> পাত্র (বর)
+                  </button>
+                </div>
               </div>
+
+              <form onSubmit={handleQuickSearch} autoComplete="off" className="space-y-4">
+
+                <div className="grid grid-cols-1 gap-3">
+
+                  {/* Preferred Age Range */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">
+                      পছন্দের বয়স
+                    </label>
+                    <select
+                      value={ageRangeKey}
+                      onChange={(e) => setAgeRangeKey(e.target.value)}
+                      autoComplete="off"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
+                    >
+                      {AGE_RANGES.map((r) => (
+                        <option key={r.key} value={r.key}>
+                          {r.key === 'all' ? r.label : `${r.label} বছর`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* District */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">
+                      জেলা / বাসস্থান
+                    </label>
+                    <select
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
+                    >
+                      <option value="All">সকল জেলা (সমগ্র বাংলাদেশ)</option>
+                      {BD_DISTRICTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Marital Status */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#B9AFD1] mb-1">
+                      বৈবাহিক অবস্থা
+                    </label>
+                    <select
+                      value={maritalStatus}
+                      onChange={(e) => setMaritalStatus(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
+                    >
+                      <option value="All">যেকোনো বৈবাহিক অবস্থা</option>
+                      <option value="Never Married">অবিবাহিত</option>
+                      <option value="Divorced">ডিভোর্সড</option>
+                      <option value="Widowed">বিধবা / বিপত্নীক</option>
+                      {lookingForGender !== 'Female' && (
+                        <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহে আগ্রহী)</option>
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2 flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-2 text-[11px] text-[#B9AFD1] text-center">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>সরাসরি অভিভাবক ও পাত্র-পাত্রীর সাথে যোগাযোগের সুব্যবস্থা</span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full px-7 py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/35 flex items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>উপযুক্ত পাত্র-পাত্রী খুঁজুন</span>
+                  </button>
+                </div>
+              </form>
             </div>
 
-            <form onSubmit={handleQuickSearch} autoComplete="off" className="space-y-4">
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5">
-                
-                {/* Preferred Age Range */}
-                <div>
-                  <label className="block text-xs md:text-sm font-semibold text-[#B9AFD1] mb-1 md:mb-1.5">
-                    পছন্দের বয়স
-                  </label>
-                  <select
-                    value={ageRangeKey}
-                    onChange={(e) => setAgeRangeKey(e.target.value)}
-                    autoComplete="off"
-                    className="w-full px-3.5 py-2.5 md:py-3.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm md:text-base font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
-                  >
-                    {AGE_RANGES.map((r) => (
-                      <option key={r.key} value={r.key}>
-                        {r.label} বছর
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* District */}
-                <div>
-                  <label className="block text-xs md:text-sm font-semibold text-[#B9AFD1] mb-1 md:mb-1.5">
-                    জেলা / বাসস্থান
-                  </label>
-                  <select
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full px-3.5 py-2.5 md:py-3.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm md:text-base font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
-                  >
-                    <option value="All">সকল জেলা (সমগ্র বাংলাদেশ)</option>
-                    {BD_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Marital Status */}
-                <div>
-                  <label className="block text-xs md:text-sm font-semibold text-[#B9AFD1] mb-1 md:mb-1.5">
-                    বৈবাহিক অবস্থা
-                  </label>
-                  <select
-                    value={maritalStatus}
-                    onChange={(e) => setMaritalStatus(e.target.value)}
-                    className="w-full px-3.5 py-2.5 md:py-3.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-xs sm:text-sm md:text-base font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
-                  >
-                    <option value="All">যেকোনো বৈবাহিক অবস্থা</option>
-                    <option value="Never Married">অবিবাহিত</option>
-                    <option value="Divorced">ডিভোর্সড</option>
-                    <option value="Widowed">বিধবা / বিপত্নীক</option>
-                    {lookingForGender !== 'Female' && (
-                      <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহে আগ্রহী)</option>
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-[11px] text-[#B9AFD1] order-2 sm:order-1 text-center sm:text-left">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>সরাসরি অভিভাবক ও পাত্র-পাত্রীর সাথে যোগাযোগের সুব্যবস্থা</span>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-7 py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/35 flex items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer order-1 sm:order-2"
+            {/* ================= DESKTOP: compact single-row bar ================= */}
+            <form
+              onSubmit={handleQuickSearch}
+              autoComplete="off"
+              className="hidden md:flex items-end gap-3 p-4"
+            >
+              <div className="flex-1 min-w-0">
+                <label className="block text-[11px] font-semibold text-[#B9AFD1] mb-1">
+                  আমি খুঁজছি
+                </label>
+                <select
+                  value={lookingForGender}
+                  onChange={(e) => setLookingForGender(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
                 >
-                  <Search className="w-4 h-4" />
-                  <span>উপযুক্ত পাত্র-পাত্রী খুঁজুন</span>
-                </button>
+                  <option value="Female">পাত্রী (কনে)</option>
+                  <option value="Male">পাত্র (বর)</option>
+                </select>
               </div>
+
+              <div className="flex-1 min-w-0">
+                <label className="block text-[11px] font-semibold text-[#B9AFD1] mb-1">
+                  বৈবাহিক অবস্থা
+                </label>
+                <select
+                  value={maritalStatus}
+                  onChange={(e) => setMaritalStatus(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
+                >
+                  <option value="All">যেকোনো বৈবাহিক অবস্থা</option>
+                  <option value="Never Married">অবিবাহিত</option>
+                  <option value="Divorced">ডিভোর্সড</option>
+                  <option value="Widowed">বিধবা / বিপত্নীক</option>
+                  {lookingForGender !== 'Female' && (
+                    <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহে আগ্রহী)</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <label className="block text-[11px] font-semibold text-[#B9AFD1] mb-1">
+                  জেলা / বাসস্থান
+                </label>
+                <select
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#150E2B] border border-white/15 text-[#F5F3FA] text-sm font-medium focus:outline-none focus:border-[#FF4D7E] transition-colors cursor-pointer"
+                >
+                  <option value="All">সকল জেলা</option>
+                  {BD_DISTRICTS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="shrink-0 px-6 py-2.5 rounded-xl font-bold text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/35 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Search className="w-4 h-4" />
+                <span>বায়োডাটা খুঁজুন</span>
+              </button>
             </form>
           </div>
 

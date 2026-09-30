@@ -10,8 +10,6 @@ import {
   Phone,
   ShieldCheck,
   Crown,
-  MapPin,
-  Briefcase,
   GraduationCap,
   Sparkles,
   Lock,
@@ -281,8 +279,11 @@ export default function ProfileDetailPage() {
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif flex items-center gap-2">
                     <span>{profile.name}</span>
+                    {profile.age && (
+                      <span className="text-lg sm:text-xl font-normal text-[#B9AFD1]">, {profile.age} বছর</span>
+                    )}
                     {profile.profileComplete && (
-                      <CheckCircle2 className="w-6 h-6 text-sky-400" />
+                      <CheckCircle2 className="w-6 h-6 text-sky-400 shrink-0" />
                     )}
                   </h1>
                 </div>
@@ -320,33 +321,6 @@ export default function ProfileDetailPage() {
                     </>
                   )}
                 </div>
-              </div>
-
-              {/* Tag Pills */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10">
-                  বয়স: {profile.age} বছর
-                </span>
-                {profile.district && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF4D7E]" /> {profile.district}
-                  </span>
-                )}
-                {profile.maritalStatus && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10">
-                    {bn(profile.maritalStatus)}
-                  </span>
-                )}
-                {profile.occupation && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#331A5C] text-[#F5F3FA] border border-white/10 flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-[#FF4D7E]" /> {profile.occupation}
-                  </span>
-                )}
-                {profile.prayerFrequency && (
-                  <span className="px-3 py-1 rounded-xl text-xs font-semibold bg-[#FF4D7E]/10 text-[#FF4D7E] border border-[#FF4D7E]/30">
-                    {bn(profile.prayerFrequency)}
-                  </span>
-                )}
               </div>
 
               {/* Introduction */}
@@ -388,6 +362,19 @@ export default function ProfileDetailPage() {
         </div>
       </div>
 
+      {/* About Me (longBio) — full-width, sits above the detail-cards grid */}
+      {profile.longBio && (
+        <div className="p-6 rounded-3xl bg-[#1F1640]/90 border border-white/10 shadow-xl space-y-3">
+          <h3 className="text-base font-bold text-[#F5F3FA] flex items-center gap-2 pb-3 border-b border-white/10">
+            <UserIcon className="w-5 h-5 text-[#FF4D7E]" />
+            বিস্তারিত জীবনী (About Me)
+          </h3>
+          <p className="text-sm text-[#B9AFD1] leading-relaxed whitespace-pre-wrap">
+            {profile.longBio}
+          </p>
+        </div>
+      )}
+
       {/* Detailed Biodata Sections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
@@ -398,6 +385,14 @@ export default function ProfileDetailPage() {
             মৌলিক ও শারীরিক তথ্য
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span className="text-[#8B7FA8] block">জেলা / বাসস্থান:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.district || 'দেওয়া হয়নি'}</span>
+            </div>
+            <div>
+              <span className="text-[#8B7FA8] block">বৈবাহিক অবস্থা:</span>
+              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.maritalStatus) || 'দেওয়া হয়নি'}</span>
+            </div>
             <div>
               <span className="text-[#8B7FA8] block">উচ্চতা:</span>
               <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{heightStr}</span>

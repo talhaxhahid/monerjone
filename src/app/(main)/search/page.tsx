@@ -14,7 +14,13 @@ import {
   Users
 } from 'lucide-react';
 
+// 'all' has no min/max at all — this MUST be the default. A default that
+// silently pins the age filter to a narrow band (e.g. '18-21') hides every
+// profile outside it with zero indication to the user, which is exactly
+// what happened before: opening /search with no query string looked like
+// "0 members" even though profiles existed, just outside that sliver.
 const AGE_RANGES = [
+  { key: 'all', label: 'যেকোনো বয়স', min: null as number | null, max: null as number | null },
   { key: '18-21', label: '18 — 21', min: 18, max: 21 },
   { key: '22-25', label: '22 — 25', min: 22, max: 25 },
   { key: '26-30', label: '26 — 30', min: 26, max: 30 },
@@ -23,14 +29,14 @@ const AGE_RANGES = [
 ];
 
 function matchAgeRangeKey(urlAgeMin: string | null, urlAgeMax: string | null): string {
-  if (!urlAgeMin) return '18-21';
+  if (!urlAgeMin) return 'all';
   const min = Number(urlAgeMin);
   const max = urlAgeMax ? Number(urlAgeMax) : null;
   const exact = AGE_RANGES.find((r) => r.min === min && r.max === max);
   if (exact) return exact.key;
   // Fall back to whichever bucket the given minimum age falls into
-  const byMin = [...AGE_RANGES].reverse().find((r) => min >= r.min);
-  return byMin ? byMin.key : '18-21';
+  const byMin = [...AGE_RANGES].filter((r) => r.min !== null).reverse().find((r) => min >= (r.min as number));
+  return byMin ? byMin.key : 'all';
 }
 
 function SearchContent() {
@@ -83,7 +89,7 @@ function SearchContent() {
         if (premiumOnly) q.set('premium', 'premium');
         {
           const range = AGE_RANGES.find((r) => r.key === ageRangeKey) || AGE_RANGES[0];
-          q.set('ageMin', range.min.toString());
+          if (range.min !== null) q.set('ageMin', range.min.toString());
           if (range.max !== null) q.set('ageMax', range.max.toString());
         }
         q.set('sort', sort);
@@ -115,7 +121,7 @@ function SearchContent() {
     setPrayerFrequency('All');
     setChildren('All');
     setPremiumOnly(false);
-    setAgeRangeKey('18-21');
+    setAgeRangeKey('all');
     setSort('newest');
   };
 
@@ -218,7 +224,7 @@ function SearchContent() {
                 className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
               >
                 {AGE_RANGES.map((r) => (
-                  <option key={r.key} value={r.key}>{r.label} বছর</option>
+                  <option key={r.key} value={r.key}>{r.key === 'all' ? r.label : `${r.label} বছর`}</option>
                 ))}
               </select>
             </div>
@@ -284,6 +290,7 @@ function SearchContent() {
                 <option value="Masters">মাস্টার্স</option>
                 <option value="HSC">এইচএসসি</option>
                 <option value="SSC">এসএসসি</option>
+                <option value="Secondary">মাধ্যমিক</option>
                 <option value="PhD">পিএইচডি</option>
                 <option value="Primary">প্রাথমিক</option>
               </select>
@@ -317,6 +324,7 @@ function SearchContent() {
                 <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
                 <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
                 <option value="Usually">মাঝে মাঝে</option>
+                <option value="Non-Religious">নিয়মিত নন</option>
               </select>
             </div>
 
@@ -426,7 +434,7 @@ function SearchContent() {
                 className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA]"
               >
                 {AGE_RANGES.map((r) => (
-                  <option key={r.key} value={r.key}>{r.label} বছর</option>
+                  <option key={r.key} value={r.key}>{r.key === 'all' ? r.label : `${r.label} বছর`}</option>
                 ))}
               </select>
             </div>
@@ -492,6 +500,7 @@ function SearchContent() {
                 <option value="Masters">মাস্টার্স</option>
                 <option value="HSC">এইচএসসি</option>
                 <option value="SSC">এসএসসি</option>
+                <option value="Secondary">মাধ্যমিক</option>
                 <option value="PhD">পিএইচডি</option>
                 <option value="Primary">প্রাথমিক</option>
               </select>
@@ -510,6 +519,7 @@ function SearchContent() {
                 <option value="4 times a day">দৈনিক ৪ ওয়াক্ত</option>
                 <option value="3 times a day">দৈনিক ৩ ওয়াক্ত</option>
                 <option value="Usually">মাঝে মাঝে</option>
+                <option value="Non-Religious">নিয়মিত নন</option>
               </select>
             </div>
 

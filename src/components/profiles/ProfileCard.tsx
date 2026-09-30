@@ -150,7 +150,7 @@ export default function ProfileCard({
                 <CheckCircle2 className="w-4 h-4 text-[#FF4D7E] shrink-0" />
               )}
             </h3>
-            <span className="text-xs sm:text-sm font-semibold text-[#F5B942] bg-[#F5B942]/10 px-2 py-0.5 rounded-lg border border-[#F5B942]/20 shrink-0">
+            <span className="text-xs sm:text-sm font-semibold text-[#FF8FAE] bg-[#FF4D7E]/10 px-2 py-0.5 rounded-lg border border-[#FF4D7E]/25 shrink-0">
               {profile.age} বছর
             </span>
           </div>
@@ -197,7 +197,7 @@ export default function ProfileCard({
               </span>
             )}
             {profile.prayerFrequency && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F5B942]/10 text-[#F5B942] border border-[#F5B942]/20">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-sky-400/10 text-sky-300 border border-sky-400/25">
                 {bn(profile.prayerFrequency)}
               </span>
             )}
@@ -213,7 +213,7 @@ export default function ProfileCard({
         <div className="pt-2 grid grid-cols-2 gap-2 border-t border-white/10">
           <Link
             href={`/profile/${profile.id}`}
-            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#F5B942]/10 hover:bg-[#F5B942]/20 text-[#F5B942] border border-[#F5B942]/30 hover:border-[#F5B942]/60 transition-all duration-200"
+            className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-center bg-[#331A5C] hover:bg-[#4B2380] text-[#F5F3FA] border border-white/10 hover:border-[#FF4D7E]/50 transition-all duration-200"
           >
             বায়োডাটা দেখুন
           </Link>

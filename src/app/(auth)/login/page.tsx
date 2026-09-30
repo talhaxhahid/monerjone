@@ -44,10 +44,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center px-4 py-8 sm:py-12">
-      <div className="w-full max-w-5xl rounded-3xl bg-[#1F1640] border border-white/10 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl">
+      <div className="w-full max-w-5xl rounded-3xl bg-[#1F1640] border border-white/10 shadow-2xl grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl">
         
         {/* ================= LEFT / SIDE IMAGE BANNER (DESKTOP ONLY) ================= */}
-        <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 overflow-hidden bg-[#150E2B]">
+        <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 overflow-hidden lg:rounded-l-3xl bg-[#150E2B]">
           {/* Background Image with layered overlays */}
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"

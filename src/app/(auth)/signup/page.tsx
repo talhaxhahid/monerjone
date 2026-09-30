@@ -77,10 +77,10 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center px-4 py-8 sm:py-12">
-      <div className="w-full max-w-6xl rounded-3xl bg-[#1F1640] border border-white/10 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl">
+      <div className="w-full max-w-6xl rounded-3xl bg-[#1F1640] border border-white/10 shadow-2xl grid grid-cols-1 lg:grid-cols-12 backdrop-blur-xl">
         
         {/* ================= LEFT / SIDE IMAGE BANNER (DESKTOP ONLY) ================= */}
-        <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 overflow-hidden bg-[#150E2B]">
+        <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 overflow-hidden lg:rounded-l-3xl bg-[#150E2B]">
           {/* Background Image with layered overlays */}
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
@@ -208,8 +208,7 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Date of Birth & Marital Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Date of Birth */}
               <div>
                 <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
                   জন্ম তারিখ (মাস ও বছর)
@@ -223,8 +222,10 @@ export default function SignupPage() {
                       value={formData.dob ? Number(formData.dob.split('-')[1]) : ''}
                       onChange={(e) => {
                         const month = e.target.value.padStart(2, '0');
-                        const year = formData.dob ? formData.dob.split('-')[0] : '';
-                        setFormData({ ...formData, dob: year ? `${year}-${month}-01` : formData.dob });
+                        const year = formData.dob
+                          ? formData.dob.split('-')[0]
+                          : String(new Date().getFullYear() - 25);
+                        setFormData({ ...formData, dob: `${year}-${month}-01` });
                       }}
                       autoComplete="off"
                       className="w-full pl-10 pr-2 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors appearance-none"
@@ -258,25 +259,6 @@ export default function SignupPage() {
                   </select>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  বৈবাহিক অবস্থা
-                </label>
-                <select
-                  value={formData.maritalStatus}
-                  onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
-                >
-                  <option value="Never Married">অবিবাহিত</option>
-                  {formData.gender !== 'Female' && (
-                    <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
-                  )}
-                  <option value="Divorced">ডিভোর্সড</option>
-                  <option value="Widowed">বিধবা / বিপত্নীক</option>
-                </select>
-              </div>
-            </div>
 
             {/* Gender Selection — this is the user's own gender, not who
                 they're searching for. Male-only marital status option is
@@ -319,6 +301,25 @@ export default function SignupPage() {
                 </button>
               </div>
             </div>
+
+            {/* Marital Status (after gender — the "second wife" option depends on it) */}
+              <div>
+                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
+                  বৈবাহিক অবস্থা
+                </label>
+                <select
+                  value={formData.maritalStatus}
+                  onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:outline-none focus:border-[#FF4D7E] transition-colors"
+                >
+                  <option value="Never Married">অবিবাহিত</option>
+                  {formData.gender !== 'Female' && (
+                    <option value="Married - Seeking Another Wife">বিবাহিত - দ্বিতীয় বিবাহে আগ্রহী</option>
+                  )}
+                  <option value="Divorced">ডিভোর্সড</option>
+                  <option value="Widowed">বিধবা / বিপত্নীক</option>
+                </select>
+              </div>
 
             {/* District & Religion */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
