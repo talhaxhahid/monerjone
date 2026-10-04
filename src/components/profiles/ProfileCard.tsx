@@ -9,7 +9,6 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
-  CheckCircle2,
   Crown
 } from 'lucide-react';
 import { ProfileCardData } from '@/types';
@@ -146,9 +145,6 @@ export default function ProfileCard({
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-base sm:text-lg font-bold text-[#F5F3FA] group-hover:text-[#FF4D7E] transition-colors flex items-center gap-1.5 truncate">
               <span className="truncate">{profile.name}</span>
-              {profile.profileComplete && (
-                <CheckCircle2 className="w-4 h-4 text-[#FF4D7E] shrink-0" />
-              )}
             </h3>
             <span className="text-xs sm:text-sm font-semibold text-[#FF8FAE] bg-[#FF4D7E]/10 px-2 py-0.5 rounded-lg border border-[#FF4D7E]/25 shrink-0">
               {profile.age} বছর
@@ -199,11 +195,6 @@ export default function ProfileCard({
             {profile.prayerFrequency && (
               <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-sky-400/10 text-sky-300 border border-sky-400/25">
                 {bn(profile.prayerFrequency)}
-              </span>
-            )}
-            {profile.hijabNiqab && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#FF4D7E]/10 text-[#FF4D7E] border border-[#FF4D7E]/20">
-                {bn(profile.hijabNiqab)}
               </span>
             )}
           </div>

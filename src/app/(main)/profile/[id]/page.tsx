@@ -15,7 +15,6 @@ import {
   Lock,
   Share2,
   Ban,
-  CheckCircle2,
   Users,
   Edit3,
   User as UserIcon,
@@ -277,14 +276,13 @@ export default function ProfileDetailPage() {
               
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif flex items-center gap-2">
-                    <span>{profile.name}</span>
-                    {profile.age && (
-                      <span className="text-lg sm:text-xl font-normal text-[#B9AFD1]">, {profile.age} বছর</span>
-                    )}
-                    {profile.profileComplete && (
-                      <CheckCircle2 className="w-6 h-6 text-sky-400 shrink-0" />
-                    )}
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F5F3FA] font-serif flex items-center">
+                    <span>
+                      {profile.name}
+                      {profile.age && (
+                        <span className="text-lg sm:text-xl font-normal text-[#B9AFD1]">, {profile.age}</span>
+                      )}
+                    </span>
                   </h1>
                 </div>
 
