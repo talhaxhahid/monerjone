@@ -49,10 +49,8 @@ function SearchContent() {
   );
   const [district, setDistrict] = useState<string>(searchParams.get('district') || 'All');
   const [maritalStatus, setMaritalStatus] = useState<string>(searchParams.get('maritalStatus') || 'All');
-  const [religion, setReligion] = useState<string>(searchParams.get('religion') || 'All');
   const [education, setEducation] = useState<string>(searchParams.get('education') || 'All');
   const [prayerFrequency, setPrayerFrequency] = useState<string>(searchParams.get('prayerFrequency') || 'All');
-  const [children, setChildren] = useState<string>(searchParams.get('children') || 'All');
   const [premiumOnly, setPremiumOnly] = useState<boolean>(searchParams.get('premium') === 'premium');
   const [ageRangeKey, setAgeRangeKey] = useState<string>(
     matchAgeRangeKey(searchParams.get('ageMin'), searchParams.get('ageMax'))
@@ -82,10 +80,8 @@ function SearchContent() {
         }
         if (district !== 'All') q.set('district', district);
         if (maritalStatus !== 'All') q.set('maritalStatus', maritalStatus);
-        if (religion !== 'All') q.set('religion', religion);
         if (education !== 'All') q.set('education', education);
         if (prayerFrequency !== 'All') q.set('prayerFrequency', prayerFrequency);
-        if (children !== 'All') q.set('children', children);
         if (premiumOnly) q.set('premium', 'premium');
         {
           const range = AGE_RANGES.find((r) => r.key === ageRangeKey) || AGE_RANGES[0];
@@ -111,15 +107,13 @@ function SearchContent() {
     return () => {
       isMounted = false;
     };
-  }, [user, effectiveGender, district, maritalStatus, religion, education, prayerFrequency, children, premiumOnly, ageRangeKey, sort]);
+  }, [user, effectiveGender, district, maritalStatus, education, prayerFrequency, premiumOnly, ageRangeKey, sort]);
 
   const resetFilters = () => {
     setDistrict('All');
     setMaritalStatus('All');
-    setReligion('All');
     setEducation('All');
     setPrayerFrequency('All');
-    setChildren('All');
     setPremiumOnly(false);
     setAgeRangeKey('all');
     setSort('newest');
@@ -262,21 +256,6 @@ function SearchContent() {
               </select>
             </div>
 
-            {/* Religion */}
-            <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ধর্ম</label>
-              <select
-                value={religion}
-                onChange={(e) => setReligion(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
-              >
-                <option value="All">যেকোনো</option>
-                <option value="Islam">ইসলাম</option>
-                <option value="Hindu">হিন্দু</option>
-                <option value="Other">অন্যান্য</option>
-              </select>
-            </div>
-
             {/* Education */}
             <div>
               <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">শিক্ষাগত যোগ্যতা</label>
@@ -296,20 +275,6 @@ function SearchContent() {
               </select>
             </div>
 
-            {/* Children */}
-            <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">সন্তান</label>
-              <select
-                value={children}
-                onChange={(e) => setChildren(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
-              >
-                <option value="All">যেকোনো</option>
-                <option value="No children">সন্তান নেই</option>
-                <option value="1 child">১ সন্তান</option>
-                <option value="2+ children">২ বা ততোধিক সন্তান</option>
-              </select>
-            </div>
 
             {/* Prayer Frequency */}
             <div>
@@ -469,21 +434,6 @@ function SearchContent() {
                 {effectiveGender !== 'Female' && (
                   <option value="Married - Seeking Another Wife">বিবাহিত (২য় বিবাহ)</option>
                 )}
-              </select>
-            </div>
-
-            {/* Religion */}
-            <div>
-              <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">ধর্ম</label>
-              <select
-                value={religion}
-                onChange={(e) => setReligion(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-xs text-[#F5F3FA] focus:outline-none focus:border-[#FF4D7E]"
-              >
-                <option value="All">যেকোনো</option>
-                <option value="Islam">ইসলাম</option>
-                <option value="Hindu">হিন্দু</option>
-                <option value="Other">অন্যান্য</option>
               </select>
             </div>
 

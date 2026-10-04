@@ -35,12 +35,10 @@ export default function ProfileEditWizardPage() {
     district: '',
     maritalStatus: '',
     religion: 'Islam',
-    children: 'No children',
     education: '',
     subject: '',
     occupation: '',
     income: '',
-    familyStatus: 'Middle class',
     fatherOccupation: '',
     motherOccupation: '',
     brothers: 0,
@@ -49,8 +47,6 @@ export default function ProfileEditWizardPage() {
     prayerFrequency: '5 times a day',
     hijabNiqab: 'Wears Hijab',
     smoking: 'No',
-    hobbies: [] as string[],
-    favoriteBooks: '',
     favoriteFood: '',
     allergies: '',
     healthProblems: '',
@@ -66,7 +62,6 @@ export default function ProfileEditWizardPage() {
     photos: [] as string[],
   });
 
-  const [hobbyInput, setHobbyInput] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -82,18 +77,6 @@ export default function ProfileEditWizardPage() {
           const data = await res.json();
           const p = data.profile;
           if (p) {
-            const safeHobbies = Array.isArray(p.hobbies)
-              ? p.hobbies
-              : typeof p.hobbies === 'string'
-              ? (() => {
-                  try {
-                    const parsed = JSON.parse(p.hobbies);
-                    return Array.isArray(parsed) ? parsed : [];
-                  } catch {
-                    return [];
-                  }
-                })()
-              : [];
 
             const safePhotos = Array.isArray(p.rawPhotos)
               ? p.rawPhotos.filter((ph: any) => ph && typeof ph === 'string')
@@ -107,12 +90,10 @@ export default function ProfileEditWizardPage() {
               district: p.district || '',
               maritalStatus: p.maritalStatus || 'Never Married',
               religion: p.religion || 'Islam',
-              children: p.children || 'No children',
               education: p.education || '',
               subject: p.subject || '',
               occupation: p.occupation || '',
               income: p.income || '',
-              familyStatus: p.familyStatus || 'Middle class',
               fatherOccupation: p.fatherOccupation || '',
               motherOccupation: p.motherOccupation || '',
               brothers: p.brothers || 0,
@@ -121,8 +102,6 @@ export default function ProfileEditWizardPage() {
               prayerFrequency: p.prayerFrequency || '5 times a day',
               hijabNiqab: p.hijabNiqab || 'Wears Hijab',
               smoking: p.smoking || 'No',
-              hobbies: safeHobbies,
-              favoriteBooks: p.favoriteBooks || '',
               favoriteFood: p.favoriteFood || '',
               allergies: p.allergies || '',
               healthProblems: p.healthProblems || '',
@@ -194,24 +173,6 @@ export default function ProfileEditWizardPage() {
     setFormData((prev: any) => ({ ...prev, photos: updated }));
   };
 
-  const addHobby = () => {
-    if (!hobbyInput.trim()) return;
-    const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
-    if (currentHobbies.includes(hobbyInput.trim())) return;
-    setFormData((prev: any) => ({
-      ...prev,
-      hobbies: [...currentHobbies, hobbyInput.trim()],
-    }));
-    setHobbyInput('');
-  };
-
-  const removeHobby = (h: string) => {
-    const currentHobbies = Array.isArray(formData.hobbies) ? formData.hobbies : [];
-    setFormData((prev: any) => ({
-      ...prev,
-      hobbies: currentHobbies.filter((item: string) => item !== h),
-    }));
-  };
 
   const handleSave = async (redirectOnSuccess: boolean = false) => {
     setError('');
@@ -402,21 +363,6 @@ export default function ProfileEditWizardPage() {
                   <option value="Islam">ইসলাম</option>
                   <option value="Hindu">হিন্দু</option>
                   <option value="Other">অন্যান্য</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>সন্তান বিবরণ</span>
-                </label>
-                <select
-                  value={formData.children || 'No children'}
-                  onChange={(e) => setFormData({ ...formData, children: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                >
-                  <option value="No children">সন্তান নেই</option>
-                  <option value="1 child">১ সন্তান</option>
-                  <option value="2+ children">২ বা ততোধিক সন্তান</option>
                 </select>
               </div>
 
@@ -616,80 +562,6 @@ export default function ProfileEditWizardPage() {
                   <option value="Occasionally">মাঝে মাঝে</option>
                   <option value="Yes">হ্যাঁ</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>পারিবারিক অবস্থান</span>
-                </label>
-                <select
-                  value={formData.familyStatus || 'Middle class'}
-                  onChange={(e) => setFormData({ ...formData, familyStatus: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                >
-                  <option value="Middle class">মধ্যবিত্ত</option>
-                  <option value="Upper middle class">উচ্চ মধ্যবিত্ত</option>
-                  <option value="Well-established">উচ্চবিত্ত / প্রতিষ্ঠিত</option>
-                  <option value="Lower class">নিম্নবিত্ত</option>
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>শখ ও পছন্দ (Hobbies)</span>
-                </label>
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder="যেমন: বই পড়া, ভ্রমণ, কুরআন তিলাওয়াত, রান্না"
-                    value={hobbyInput}
-                    onChange={(e) => setHobbyInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addHobby();
-                      }
-                    }}
-                    className="flex-1 px-3.5 py-2 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={addHobby}
-                    className="px-4 py-2 rounded-xl bg-[#FF4D7E] hover:bg-[#E63465] text-white text-xs font-bold transition-all cursor-pointer"
-                  >
-                    <span>যুক্ত করুন</span>
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {(Array.isArray(formData.hobbies) ? formData.hobbies : []).map((h: string) => (
-                    <span
-                      key={`hobby-tag-${h}`}
-                      className="px-3 py-1 rounded-full bg-[#331A5C] text-[#F5F3FA] text-xs border border-white/10 flex items-center gap-1.5"
-                    >
-                      <span>{h}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeHobby(h)}
-                        className="text-[#8B7FA8] hover:text-rose-400"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#B9AFD1] mb-1.5">
-                  <span>প্রিয় বই</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: বুখারী শরীফ, উপন্যাস"
-                  value={formData.favoriteBooks || ''}
-                  onChange={(e) => setFormData({ ...formData, favoriteBooks: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#150E2B] border border-white/10 text-[#F5F3FA] text-xs focus:border-[#FF4D7E] outline-none"
-                />
               </div>
 
               <div>

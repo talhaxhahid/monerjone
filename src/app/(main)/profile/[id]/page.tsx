@@ -405,10 +405,6 @@ export default function ProfileDetailPage() {
               <span className="text-[#8B7FA8] block">ধর্ম:</span>
               <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.religion)}</span>
             </div>
-            <div>
-              <span className="text-[#8B7FA8] block">সন্তান বিবরণ:</span>
-              <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{bn(profile.children) || 'প্রযোজ্য নয়'}</span>
-            </div>
             <div className="col-span-2">
               <span className="text-[#8B7FA8] block">ভাষাসমূহ:</span>
               <span className="font-semibold text-[#F5F3FA] mt-0.5 block">{profile.languages || 'বাংলা'}</span>

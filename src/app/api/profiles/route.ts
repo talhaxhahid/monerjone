@@ -12,11 +12,9 @@ export async function GET(request: NextRequest) {
 
     const genderParam = searchParams.get('gender');
     const districtParam = searchParams.get('district');
-    const religionParam = searchParams.get('religion');
     const maritalStatusParam = searchParams.get('maritalStatus');
     const educationParam = searchParams.get('education');
     const prayerFrequencyParam = searchParams.get('prayerFrequency');
-    const childrenParam = searchParams.get('children');
     const premiumParam = searchParams.get('premium');
     const ageMinParam = searchParams.get('ageMin');
     const ageMaxParam = searchParams.get('ageMax');
@@ -30,6 +28,11 @@ export async function GET(request: NextRequest) {
     if (me) {
       where.id = { not: me.id };
       where.gender = me.gender === 'Male' ? 'Female' : 'Male';
+      // Same-religion rule: members only match within their own religion.
+      // This isn't a user-facing filter choice anymore — it's always on.
+      if (me.religion) {
+        where.religion = me.religion;
+      }
 
       // Exclude blocked users (both ways)
       const blocksGiven = await prisma.block.findMany({
@@ -56,9 +59,6 @@ export async function GET(request: NextRequest) {
     if (districtParam && districtParam !== 'All') {
       where.district = districtParam;
     }
-    if (religionParam && religionParam !== 'All') {
-      where.religion = religionParam;
-    }
     if (maritalStatusParam && maritalStatusParam !== 'All') {
       where.maritalStatus = maritalStatusParam;
     }
@@ -73,9 +73,6 @@ export async function GET(request: NextRequest) {
     }
     if (prayerFrequencyParam && prayerFrequencyParam !== 'All') {
       profileWhere.prayerFrequency = prayerFrequencyParam;
-    }
-    if (childrenParam && childrenParam !== 'All') {
-      profileWhere.children = childrenParam;
     }
 
     if (Object.keys(profileWhere).length > 0) {
