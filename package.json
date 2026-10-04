@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/init-db.js",
-    "build": "next build",
+    "build": "next build --webpack",
     "prestart": "node scripts/init-db.js",
     "start": "node scripts/init-db.js && next start",
     "init-db": "node scripts/init-db.js",
