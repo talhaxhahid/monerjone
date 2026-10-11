@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Sparkles, ShieldCheck } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 import { BD_DISTRICTS } from '@/lib/utils';
 
 const AGE_RANGES = [
@@ -38,7 +38,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="h-full flex flex-col justify-center overflow-hidden">
+    <div className="min-h-full flex flex-col justify-center">
       
       {/* ================= HERO SECTION WITH FULL BACKGROUND & EMBEDDED FORM ================= */}
       <section className="relative py-6 sm:py-10 overflow-hidden rounded-b-[2rem] sm:rounded-b-[3.5rem] border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
@@ -179,11 +179,6 @@ export default function HomePage() {
 
                 {/* Submit Button */}
                 <div className="pt-2 flex flex-col items-center gap-3">
-                  <div className="flex items-center gap-2 text-[11px] text-[#B9AFD1] text-center">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>সরাসরি অভিভাবক ও পাত্র-পাত্রীর সাথে যোগাযোগের সুব্যবস্থা</span>
-                  </div>
-
                   <button
                     type="submit"
                     className="w-full px-7 py-3 rounded-xl font-bold text-xs sm:text-sm bg-[#FF4D7E] hover:bg-[#E63465] text-white shadow-lg shadow-[#FF4D7E]/35 flex items-center justify-center gap-2 transform active:scale-95 transition-all cursor-pointer"

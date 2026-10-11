@@ -160,7 +160,7 @@ export default function DashboardPage() {
 
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FF4D7E]/10 text-[#FF4D7E] text-[10px] sm:text-xs font-semibold border border-[#FF4D7E]/20">
-              <span>👋 আসসালামু আলাইকুম</span>
+              <span>👋 {user.religion === 'Islam' ? 'আসসালামু আলাইকুম' : 'স্বাগতম!'}</span>
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#F5F3FA] font-serif">
               {user.firstName} {user.lastName}

@@ -502,7 +502,7 @@ function InboxContent() {
     <div className="max-w-7xl mx-auto md:px-4 sm:px-6 lg:px-8 md:py-6">
       {/* No backdrop-blur on mobile: it creates a containing block that breaks
           fixed positioning and causes GPU shadow-tiling glitches on Android. */}
-      <div className="h-[calc(100dvh-4rem-3.5rem)] md:h-[80vh] md:min-h-[550px] md:rounded-3xl bg-[#1F1640] md:bg-[#1F1640]/95 md:border md:border-[#FF4D7E]/20 md:shadow-2xl md:backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
+      <div className="h-[calc(100dvh-4rem-3.5rem)] md:h-[80vh] md:min-h-[550px] md:rounded-3xl bg-[#1F1640] md:bg-[#1F1640]/95 md:border md:border-[#FF4D7E]/20 md:shadow-2xl md:backdrop-blur-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 grid-rows-[minmax(0,1fr)]">
 
         {/* ================= LEFT: CONVERSATIONS LIST ================= */}
         <div

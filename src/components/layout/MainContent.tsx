@@ -20,7 +20,7 @@ export default function MainContent({ children }: { children: React.ReactNode })
 
   if (isGuestLandingPage) {
     return (
-      <main className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
+      <main className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain">
         {children}
       </main>
     );

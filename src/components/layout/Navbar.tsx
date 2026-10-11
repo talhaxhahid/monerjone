@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { bn } from '@/lib/utils';
 import BrandLogo from './BrandLogo';
+import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -147,17 +148,17 @@ export default function Navbar() {
                     className="flex items-center gap-2.5 p-1 rounded-full bg-[#1F1640] border border-white/15 hover:border-[#FF4D7E]/60 transition-all focus:outline-none cursor-pointer"
                   >
                     <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-[#8b5cf6] via-[#c026d3] to-[#7c3aed] shrink-0">
-                      {user.photoUrl ? (
-                        <img
+                      {/* ImageWithFallback shows the profile icon when there's no
+                          photo OR when the photo fails to load (no broken-image icon). */}
+                      <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#1F1640] bg-[#1F1640]">
+                        <ImageWithFallback
                           src={user.photoUrl}
-                          alt={user.firstName}
-                          className="w-full h-full rounded-full object-cover border-2 border-[#1F1640]"
+                          alt={user.firstName || 'Profile'}
+                          gender={user.gender}
+                          fallbackType="avatar"
+                          className="w-full h-full object-cover"
                         />
-                      ) : (
-                        <div className="w-full h-full rounded-full border-2 border-[#1F1640] bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-bold flex items-center justify-center text-sm">
-                          {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
-                        </div>
-                      )}
+                      </div>
                     </div>
                     <span className="hidden lg:inline text-sm font-medium text-slate-200 pr-2">
                       {user.firstName}
@@ -323,17 +324,15 @@ export default function Navbar() {
                 <div className="p-4 rounded-2xl bg-gradient-to-tr from-[#1F1640] to-[#331A5C] border border-[#FF4D7E]/30 shadow-lg space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full p-[2.5px] bg-gradient-to-tr from-[#8b5cf6] via-[#c026d3] to-[#7c3aed] shrink-0">
-                      {user.photoUrl ? (
-                        <img
+                      <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#1F1640] bg-[#1F1640]">
+                        <ImageWithFallback
                           src={user.photoUrl}
-                          alt={user.firstName}
-                          className="w-full h-full rounded-full object-cover border-2 border-[#1F1640]"
+                          alt={user.firstName || 'Profile'}
+                          gender={user.gender}
+                          fallbackType="avatar"
+                          className="w-full h-full object-cover"
                         />
-                      ) : (
-                        <div className="w-full h-full rounded-full border-2 border-[#1F1640] bg-gradient-to-tr from-[#FF4D7E] to-[#F5B942] text-white font-extrabold flex items-center justify-center text-lg">
-                          {user.firstName ? user.firstName[0].toUpperCase() : 'U'}
-                        </div>
-                      )}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-[#F5F3FA] truncate">
